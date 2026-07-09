@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Indizilla</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="admin.html" class="active">Admin</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <button class="btn btn-secondary" type="button" id="logout-top">Sign out</button>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="section-tight">
+    <div class="container">
+
+      <div class="dash-head">
+        <div>
+          <div class="eyebrow">Super admin</div>
+          <h1 style="font-size:clamp(26px,3.6vw,36px);">Control room.</h1>
+        </div>
+        <div class="credit-pill">
+          <span class="cp-label">Alerts</span>
+          <span class="cp-amount" id="alert-count">0</span>
+        </div>
+      </div>
+
+      <div class="dash-tabs" role="tablist">
+        <button class="dash-tab active" data-tab="jobs" type="button">Job sheet</button>
+        <button class="dash-tab" data-tab="bills" type="button">Bills</button>
+        <button class="dash-tab" data-tab="users" type="button">Clients</button>
+        <button class="dash-tab" data-tab="coupons" type="button">Coupons</button>
+      </div>
+
+      <!-- JOB SHEET -->
+      <section class="dash-panel" id="panel-jobs">
+        <div id="alerts" class="alert-strip"></div>
+        <div class="card">
+          <h3 style="font-size:17px; margin-bottom:4px;">Job sheet</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px;">Every order becomes a job with a due date. Change status and dates here — delays and open issues raise alerts above automatically.</p>
+          <div id="jobs-list"></div>
+        </div>
+      </section>
+
+      <!-- BILLS -->
+      <section class="dash-panel" id="panel-bills" hidden>
+        <div class="card" style="max-width:760px;">
+          <h3 style="font-size:17px; margin-bottom:14px;">All bills</h3>
+          <div id="bills-list"></div>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section class="dash-panel" id="panel-users" hidden>
+        <div class="card">
+          <h3 style="font-size:17px; margin-bottom:14px;">Clients</h3>
+          <div class="table-wrap">
+            <table class="admin-table" id="users-table">
+              <thead><tr><th>Client</th><th>Orders</th><th>Credits</th><th>Adjust credits</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- COUPONS -->
+      <section class="dash-panel" id="panel-coupons" hidden>
+        <div class="dash-grid">
+          <div class="card">
+            <h3 style="font-size:17px; margin-bottom:14px;">All coupon codes</h3>
+            <div id="coupons-admin"></div>
+          </div>
+          <div class="card" style="align-self:start;">
+            <h3 style="font-size:17px; margin-bottom:14px;">New coupon</h3>
+            <div class="form-grid">
+              <div class="form-field"><label for="c-code">Code</label><input id="c-code" type="text" placeholder="DIWALI25"></div>
+              <div class="form-field"><label for="c-type">Type</label>
+                <select id="c-type"><option value="percent">Percent off</option><option value="flat">Flat ₹ off</option></select>
+              </div>
+              <div class="form-field"><label for="c-value">Value</label><input id="c-value" type="number" placeholder="10"></div>
+              <div class="form-field"><label for="c-min">Min order ₹</label><input id="c-min" type="number" placeholder="0"></div>
+              <div class="form-field"><label for="c-max">Max discount ₹ <span class="opt">(percent only)</span></label><input id="c-max" type="number" placeholder="1000"></div>
+              <div class="form-field full"><label for="c-desc">Description shown to clients</label><input id="c-desc" type="text" placeholder="10% off any order"></div>
+            </div>
+            <button class="btn btn-primary" type="button" id="c-save" style="margin-top:16px;">Add coupon</button>
+            <p id="c-msg" style="font-size:13px; color:var(--accent-ink); margin-top:10px;" hidden></p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Indizilla — admin console.</span>
+      <span><a href="dashboard.html">Back to dashboard</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/bills.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

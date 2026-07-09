@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>À la carte — Build Your Own Bundle — Indizilla</title>
+  <meta name="description" content="Pick exactly the services you need, à la carte. If a package covers your picks, we'll show you the better deal — packages always win.">
+  <link rel="canonical" href="https://indizilla.com/cart.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="À la carte — Indizilla">
+  <meta property="og:description" content="Pick individual services. We'll recommend the package that saves you money.">
+  <meta property="og:url" content="https://indizilla.com/cart.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="services.html">Services</a>
+      <a href="cart.html" class="active">À la carte</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="about.html">About</a>
+      <a href="resources.html">Resources</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <a class="btn btn-primary" href="contact.html">Get Started <span class="arrow">↗</span></a>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-header">
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>À la carte</span></nav>
+      <div class="eyebrow">À la carte</div>
+      <h1>Pick exactly what you need.</h1>
+      <p class="lead">Every service, individually. One honest catch: clubbing services that already live inside a package costs à-la-carte combination pricing — so when a package covers your picks, we'll show it and it will always be the better deal.</p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container">
+      <div class="cart-layout">
+
+        <div class="card">
+          <h3 style="font-size:17px; margin-bottom:4px;">All services</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px;">Prices are "starts from". Monthly services show their per-month price.</p>
+          <div id="alacarte-list"></div>
+        </div>
+
+        <div class="cart-summary-col">
+          <div class="card summary-card" style="position:static;">
+            <h3 style="font-size:17px; margin-bottom:14px;">Your selection</h3>
+            <div id="cart-lines"><p style="font-size:14px; color:var(--text-muted);">Nothing selected yet.</p></div>
+            <div id="cart-totals" hidden>
+              <div class="sum-line"><span>Services</span><strong id="ct-subtotal">₹0</strong></div>
+              <div class="sum-line" id="ct-premium-row" hidden>
+                <span>À la carte combination pricing <button type="button" id="premium-why" class="btn-mini" style="padding:1px 8px; font-size:11px;">?</button></span>
+                <strong id="ct-premium">+₹0</strong>
+              </div>
+              <div class="sum-line sum-total"><span>Total</span><strong id="ct-total">₹0</strong></div>
+              <p id="premium-note" style="font-size:12px; color:var(--text-muted); margin-top:8px;" hidden>Combination pricing applies when you club services that belong to the same package — the package below waives it entirely.</p>
+              <button class="btn btn-primary" type="button" id="cart-pay" style="width:100%; margin-top:16px;">Continue to payment <span class="arrow">↗</span></button>
+            </div>
+            <div class="trust-strip" style="padding-bottom:0;">
+              <span>Razorpay-secured payment</span>
+              <span>Bill generated automatically</span>
+              <span>You own everything we build</span>
+            </div>
+          </div>
+
+          <div class="upsell-card" id="upsell" hidden>
+            <h4 id="up-title">Better together</h4>
+            <p id="up-body"></p>
+            <div class="save" id="up-save"></div>
+            <button class="btn btn-primary" type="button" id="up-switch" style="width:100%;">Switch to this package</button>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:10px;">Switching replaces your selection with the package — nothing is lost, everything selected is included.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="brand-band" aria-hidden="true">INDIZILLA™ — INDIZILLA™ — INDIZILLA™ — INDIZILLA™</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Indizilla. All rights reserved.</span>
+      <span><a href="pricing.html">Prefer simple? See packages</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/payments.js"></script>
+<script src="js/main.js"></script>
+<script src="js/cart.js"></script>
+</body>
+</html>

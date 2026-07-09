@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Client Login — Indizilla</title>
+  <meta name="description" content="Sign in to your Indizilla client dashboard — orders, credits, referrals and payments in one place.">
+  <link rel="canonical" href="https://indizilla.com/login.html">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="services.html">Services</a>
+      <a href="cart.html">À la carte</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="about.html">About</a>
+      <a href="resources.html">Resources</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html" class="active">Login</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <a class="btn btn-primary" href="contact.html">Get Started <span class="arrow">↗</span></a>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container login-wrap">
+      <div class="login-card card">
+        <div class="eyebrow">Client login</div>
+        <h1 style="font-size:clamp(26px,3.4vw,34px); margin-bottom:10px;">Your projects, payments and credits — in one place.</h1>
+        <p style="font-size:15px; color:var(--text-muted); margin-bottom:28px;">Sign in to order services, track your projects, apply coupon codes and earn referral credits.</p>
+
+        <div id="google-signin"></div>
+
+        <div class="login-divider"><span>or continue with email</span></div>
+
+        <form id="email-login">
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="l-name">Name</label>
+              <input id="l-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="form-field">
+              <label for="l-email">Email</label>
+              <input id="l-email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="form-field full">
+              <label for="f-referral">Referral code <span class="opt">(optional — new accounts only)</span></label>
+              <input id="f-referral" name="referral" type="text" placeholder="INDI-XXXX">
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit" style="margin-top:20px; width:100%;">Sign in</button>
+        </form>
+
+        <p style="font-size:12px; color:var(--text-muted); margin-top:18px;">New here? Signing in creates your account. No passwords, no spam.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="brand-band" aria-hidden="true">INDIZILLA™ — INDIZILLA™ — INDIZILLA™ — INDIZILLA™</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Indizilla. All rights reserved.</span>
+      <span><a href="index.html">Back to indizilla.com</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script>
+  (async () => {
+    // Already signed in? Straight to the dashboard (or ?next= target).
+    const user = await DB.init();
+    const params = new URLSearchParams(location.search);
+    if (user) {
+      const next = params.get('next') || '';
+      window.location.href = /^(dashboard|cart|admin)\.html$/.test(next) ? next : 'dashboard.html';
+      return;
+    }
+    // Prefill referral code from a shared link (?ref=INDI-XXXX)
+    const ref = params.get('ref');
+    if (ref) document.getElementById('f-referral').value = ref.toUpperCase();
+    Auth.initGoogleButton('google-signin');
+    Auth.bindEmailForm('email-login');
+  })();
+</script>
+</body>
+</html>

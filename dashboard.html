@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Indizilla</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="services.html">Services</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="about.html">About</a>
+      <a href="resources.html">Resources</a>
+      <a href="contact.html">Contact</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <button class="btn btn-secondary" type="button" id="logout-top">Sign out</button>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="section-tight">
+    <div class="container">
+
+      <div class="dash-head">
+        <div>
+          <div class="eyebrow">Client dashboard</div>
+          <h1 style="font-size:clamp(26px,3.6vw,36px);">Hi, <span id="u-first">there</span>.</h1>
+        </div>
+        <div class="credit-pill" title="Internal credits — redeem on any service">
+          <span class="cp-label">Credits</span>
+          <span class="cp-amount" id="credit-balance">₹0</span>
+        </div>
+      </div>
+
+      <div class="dash-tabs" role="tablist">
+        <button class="dash-tab active" data-tab="overview" type="button">Overview</button>
+        <button class="dash-tab" data-tab="order" type="button">Order a service</button>
+        <button class="dash-tab" data-tab="bills" type="button">Bills</button>
+        <button class="dash-tab" data-tab="referrals" type="button">Referrals</button>
+        <button class="dash-tab" data-tab="account" type="button">Account</button>
+        <a class="dash-tab" id="admin-link" href="admin.html" hidden>Admin ↗</a>
+      </div>
+
+      <!-- OVERVIEW -->
+      <section class="dash-panel" id="panel-overview">
+        <div class="dash-grid">
+          <div class="card">
+            <h3 style="font-size:17px; margin-bottom:14px;">Your orders</h3>
+            <div id="orders-list"></div>
+          </div>
+          <div style="display:grid; gap:18px; align-content:start;">
+            <div class="card">
+              <h3 style="font-size:17px; margin-bottom:10px;">Credit history</h3>
+              <div id="credit-history"></div>
+            </div>
+            <div class="card" style="background:var(--accent-tint); border-color:transparent;">
+              <h4>Active coupon codes</h4>
+              <div id="coupon-list" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ORDER -->
+      <section class="dash-panel" id="panel-order" hidden>
+        <div class="dash-grid">
+          <div class="card">
+            <h3 style="font-size:17px; margin-bottom:18px;">New order</h3>
+            <div class="form-field">
+              <label for="svc-select">Service</label>
+              <select id="svc-select"></select>
+            </div>
+            <div class="form-field" style="margin-top:16px;">
+              <label for="coupon-input">Coupon code <span class="opt">(optional)</span></label>
+              <div style="display:flex; gap:8px;">
+                <input id="coupon-input" type="text" placeholder="WELCOME10" style="flex:1;">
+                <button class="btn btn-secondary" type="button" id="apply-coupon" style="padding:10px 18px;">Apply</button>
+              </div>
+              <p id="coupon-msg" style="font-size:13px; margin-top:6px;"></p>
+            </div>
+            <label class="credits-row" id="credits-row" hidden>
+              <input type="checkbox" id="use-credits">
+              <span>Redeem my credits (<span id="credits-available">₹0</span> available)</span>
+            </label>
+          </div>
+          <div class="card summary-card">
+            <h3 style="font-size:17px; margin-bottom:14px;">Summary</h3>
+            <div class="sum-line"><span id="sum-service">—</span><strong id="sum-price">₹0</strong></div>
+            <div class="sum-line" id="sum-discount-row" hidden><span>Coupon discount</span><strong id="sum-discount" class="sum-green">−₹0</strong></div>
+            <div class="sum-line" id="sum-credits-row" hidden><span>Credits redeemed</span><strong id="sum-credits" class="sum-green">−₹0</strong></div>
+            <div class="sum-line sum-total"><span>To pay</span><strong id="sum-total">₹0</strong></div>
+            <p id="monthly-note" style="font-size:12px; color:var(--text-muted); margin-top:8px;" hidden>This is a monthly service — the amount shown is the first month.</p>
+            <button class="btn btn-primary" type="button" id="pay-btn" style="width:100%; margin-top:18px;">Pay with Razorpay <span class="arrow">↗</span></button>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:12px;">Secured by Razorpay · UPI, cards, netbanking. You'll get a confirmation and we'll reach out within one business day to kick off.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- BILLS -->
+      <section class="dash-panel" id="panel-bills" hidden>
+        <div class="card" style="max-width:720px;">
+          <h3 style="font-size:17px; margin-bottom:6px;">Your bills</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">A bill is generated automatically for every order. Open one to print it or save it as a PDF.</p>
+          <div id="bills-list"></div>
+        </div>
+      </section>
+
+      <!-- REFERRALS -->
+      <section class="dash-panel" id="panel-referrals" hidden>
+        <div class="dash-grid">
+          <div class="card">
+            <h3 style="font-size:17px; margin-bottom:8px;">Refer a business, earn ₹500 in credits.</h3>
+            <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">When a business you refer creates an account, ₹500 worth of internal credits lands in your balance — redeemable against any service. Capped at <strong>3 credited referrals per quarter</strong>.</p>
+            <div id="referral-locked" hidden>
+              <p style="font-size:14px; color:var(--text-soft); background:var(--surface-alt); border-radius:var(--r-sm); padding:14px 16px;">Referral codes unlock after your first project with us. Place your first order and this tab opens up.</p>
+            </div>
+            <div id="referral-open" hidden>
+              <div class="form-field">
+                <label>Your referral code</label>
+                <div class="ref-code-row">
+                  <code id="ref-code" class="ref-code">INDI-XXXX</code>
+                  <button class="btn btn-secondary" type="button" id="copy-code" style="padding:10px 18px;">Copy</button>
+                </div>
+              </div>
+              <div class="form-field" style="margin-top:14px;">
+                <label>Share link</label>
+                <div class="ref-code-row">
+                  <input id="ref-link" type="text" readonly style="flex:1;">
+                  <button class="btn btn-secondary" type="button" id="copy-link" style="padding:10px 18px;">Copy</button>
+                </div>
+              </div>
+              <p id="copy-msg" style="font-size:13px; color:var(--accent-ink); margin-top:8px;" hidden>Copied.</p>
+            </div>
+          </div>
+          <div style="display:grid; gap:18px; align-content:start;">
+            <div class="card" style="background:var(--ink); color:#F5F5F3; border-color:transparent;">
+              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.1em; opacity:0.7;">This quarter</div>
+              <div style="font-family:var(--font-disp); font-size:34px; font-weight:800; color:var(--accent); margin-top:6px;"><span id="ref-count">0</span> / 3</div>
+              <div style="font-size:13px; opacity:0.75; margin-top:4px;">credited referrals used (<span id="ref-quarter"></span>)</div>
+            </div>
+            <div class="card">
+              <h4 style="margin-bottom:10px;">Your referrals</h4>
+              <div id="referral-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACCOUNT -->
+      <section class="dash-panel" id="panel-account" hidden>
+        <div class="card" style="max-width:520px;">
+          <h3 style="font-size:17px; margin-bottom:18px;">Account</h3>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="acc-name">Name</label>
+              <input id="acc-name" type="text">
+            </div>
+            <div class="form-field">
+              <label for="acc-business">Business name</label>
+              <input id="acc-business" type="text">
+            </div>
+            <div class="form-field full">
+              <label for="acc-email">Email</label>
+              <input id="acc-email" type="email" disabled>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+            <button class="btn btn-primary" type="button" id="save-account">Save changes</button>
+            <button class="btn btn-secondary" type="button" id="logout-btn">Sign out</button>
+          </div>
+          <p id="save-msg" style="font-size:13px; color:var(--accent-ink); margin-top:12px;" hidden>Saved.</p>
+        </div>
+      </section>
+
+    </div>
+  </section>
+</main>
+
+<div class="brand-band" aria-hidden="true">INDIZILLA™ — INDIZILLA™ — INDIZILLA™ — INDIZILLA™</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Indizilla. All rights reserved.</span>
+      <span><a href="contact.html">Need help? Contact us</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/payments.js"></script>
+<script src="js/bills.js"></script>
+<script src="js/main.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
