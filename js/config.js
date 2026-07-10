@@ -21,5 +21,5 @@ window.INDIZILLA_CONFIG = {
   siteUrl: 'https://indizilla.com',
 
   // Super admin accounts — full read/write on users, jobs, bills, coupons and credits.
-  adminEmails: ['ashishnarayan9110@gmail.com']
+  adminEmails: ['ashishnarayan9110@gmail.com', 'ancor.yen@gmail.com']
 };

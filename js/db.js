@@ -476,7 +476,9 @@ window.DB = (() => {
       const r = await sb.rpc('my_referral_code');
       if (r.data) mine.referralCode = r.data;
     }
-    return getSession();
+    // NOT the module-level getSession() — that one reads the demo localStorage
+    // key and always returns null in remote mode.
+    return data.users.find(u => u.id === sessionUserId) || null;
   }
 
   const remote = {
