@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New study — Indizilla Research</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="research.html" class="active">Research</a>
+      <a href="research-pricing.html">Credit packs</a>
+      <a href="research-methodology.html">Methodology</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <span class="credit-pill" title="Study credits available"><span class="cp-label">Credits</span><span class="cp-amount" id="rc-balance">—</span></span>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="section-tight">
+    <div class="container container-narrow">
+
+      <div class="eyebrow">New study</div>
+      <h1 style="font-size:clamp(24px,3.4vw,34px);">Turn a decision into a study.</h1>
+
+      <!-- Stepper -->
+      <ol class="stepper" id="stepper">
+        <li class="step-dot is-current" data-step="1"><span>1</span> Describe</li>
+        <li class="step-dot" data-step="2"><span>2</span> Audience</li>
+        <li class="step-dot" data-step="3"><span>3</span> Survey &amp; launch</li>
+      </ol>
+
+      <!-- STEP 1: DESCRIBE -->
+      <section class="wiz-panel" id="wiz-1">
+        <div class="card">
+          <div class="form-field">
+            <label for="w-idea">Your idea <span class="opt">— what is it, who's it for, what problem does it solve?</span></label>
+            <textarea id="w-idea" rows="4" maxlength="2000" placeholder="e.g. A weekly meal-prep subscription box for hostel students who don't have time to cook — ₹1,200/month, delivered to campus."></textarea>
+            <div class="char-count"><span id="idea-count">0</span> / 2000</div>
+          </div>
+          <div class="form-field" style="margin-top:8px;">
+            <label for="w-decision">The decision you need to make</label>
+            <textarea id="w-decision" rows="2" maxlength="600" placeholder="e.g. Should we launch in one city first, or three at once?"></textarea>
+          </div>
+
+          <button class="disclosure" type="button" id="url-toggle" aria-expanded="false">+ Add reference webpage URLs <span class="opt">(optional — grounds the panel)</span></button>
+          <div id="url-box" hidden>
+            <div id="url-list"></div>
+            <button class="btn btn-secondary btn-sm" type="button" id="add-url">Add a URL</button>
+            <p class="hint">Up to 10 pages — a competitor, a landing page, a reference. Used as extra context for the personas.</p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h3 style="font-size:16px; margin-bottom:6px;">Study size</h3>
+          <p class="hint" style="margin-bottom:14px;">Bigger panels give more confidence and cost more credits. You can change this any time before launch.</p>
+          <div id="mode-list" class="mode-cards"></div>
+        </div>
+
+        <!-- Study Fit gate -->
+        <div class="fit-banner" id="fit-banner" hidden>
+          <div class="fit-head"><span class="fit-icon">!</span> <strong>Needs review</strong></div>
+          <ul id="fit-issues"></ul>
+          <p class="hint">You can add detail now, or continue anyway — but a sharper brief gives a sharper panel.</p>
+        </div>
+
+        <div class="wiz-actions">
+          <span></span>
+          <button class="btn btn-primary" type="button" id="to-2">Continue <span class="arrow">→</span></button>
+        </div>
+      </section>
+
+      <!-- STEP 2: AUDIENCE -->
+      <section class="wiz-panel" id="wiz-2" hidden>
+        <div class="callout-inline" id="infer-note">
+          <strong>Pre-filled from your idea.</strong> We inferred a likely audience — review and adjust before we generate questions.
+        </div>
+
+        <div class="card">
+          <div class="form-field">
+            <label>Markets</label>
+            <div class="chip-select" id="markets" data-multi="1"></div>
+          </div>
+          <div class="form-field" style="margin-top:16px;">
+            <label>Age ranges</label>
+            <div class="chip-select" id="ages" data-multi="1"></div>
+          </div>
+          <div class="form-field" style="margin-top:16px;">
+            <label>Roles <span class="opt">— who should be in the panel?</span></label>
+            <div class="tag-input" id="roles-tags"></div>
+            <div class="tag-suggest" id="roles-suggest"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="w-company">Company profile <span class="opt">(B2B)</span></label>
+              <input id="w-company" type="text" placeholder="e.g. teams of 10–200">
+            </div>
+            <div class="form-field">
+              <label for="w-industry">Industry &amp; context</label>
+              <input id="w-industry" type="text" placeholder="e.g. Food &amp; Beverage">
+            </div>
+          </div>
+
+          <div class="form-field" style="margin-top:16px;">
+            <label>Attitude &amp; skepticism</label>
+            <div class="slider-row">
+              <div class="slider-cell"><span>Tech-savvy</span><input type="range" id="s-tech" min="0" max="100" value="50"><output id="o-tech">50</output></div>
+              <div class="slider-cell"><span>Skeptics</span><input type="range" id="s-skeptics" min="0" max="100" value="40"><output id="o-skeptics">40%</output></div>
+              <div class="slider-cell"><span>Pushback</span><input type="range" id="s-pushback" min="0" max="10" value="6"><output id="o-pushback">6/10</output></div>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top:16px;">
+            <div class="form-field">
+              <label for="w-diversity">Diversity &amp; identity</label>
+              <input id="w-diversity" type="text" placeholder="e.g. balanced gender, mixed income">
+            </div>
+            <div class="form-field">
+              <label for="w-notes">Notes <span class="opt">(optional)</span></label>
+              <input id="w-notes" type="text" placeholder="Anything else the panel should know">
+            </div>
+          </div>
+        </div>
+
+        <div class="wiz-actions">
+          <button class="btn btn-secondary" type="button" id="back-1"><span class="arrow">←</span> Back</button>
+          <button class="btn btn-primary" type="button" id="to-3">Generate questions <span class="arrow">→</span></button>
+        </div>
+      </section>
+
+      <!-- STEP 3: SURVEY & LAUNCH -->
+      <section class="wiz-panel" id="wiz-3" hidden>
+        <div class="card">
+          <div class="survey-head">
+            <div>
+              <h3 style="font-size:16px; margin-bottom:4px;">Your survey</h3>
+              <p class="hint">Edit any question, or regenerate the set. Each persona also gets 2 follow-up probes.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" id="regen">↻ Regenerate</button>
+          </div>
+          <ol id="survey-list" class="survey-list"></ol>
+        </div>
+
+        <div class="card launch-card">
+          <div class="launch-summary">
+            <div>
+              <div class="ls-mode" id="ls-mode">Quick Pulse</div>
+              <div class="ls-detail" id="ls-detail">50 personas · 6 questions</div>
+            </div>
+            <div class="ls-cost">
+              <div class="ls-num"><span id="ls-credits">100</span> credits</div>
+              <div class="ls-bal">Balance: <span id="ls-balance">—</span></div>
+            </div>
+          </div>
+          <p class="launch-warn" id="launch-warn" hidden></p>
+          <button class="btn btn-primary" type="button" id="launch" style="width:100%; margin-top:16px;">Run the study <span class="arrow">↗</span></button>
+          <p class="hint" style="text-align:center; margin-top:10px;">Credits are only spent when the study runs. This takes a moment.</p>
+        </div>
+
+        <div class="wiz-actions">
+          <button class="btn btn-secondary" type="button" id="back-2"><span class="arrow">←</span> Back</button>
+          <span></span>
+        </div>
+      </section>
+
+      <!-- Running overlay -->
+      <div class="run-overlay" id="run-overlay" hidden>
+        <div class="run-card">
+          <div class="run-spinner" aria-hidden="true"></div>
+          <div class="run-status" id="run-status">Assembling your panel…</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/research-engine.js"></script>
+<script src="js/research-db.js"></script>
+<script src="js/main.js"></script>
+<script src="js/research-new.js"></script>
+</body>
+</html>

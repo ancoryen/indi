@@ -94,7 +94,20 @@ window.DB = (() => {
   function save() { if (REMOTE) return; localStorage.setItem(KEY, JSON.stringify(data)); }
 
   const uid = (p) => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  const inr = (n) => '₹' + Number(n).toLocaleString('en-IN');
+
+  // Catalogue prices are quoted for the Indian baseline. Visitors from pricier
+  // markets are scaled up once, here, so every downstream calculation (coupons,
+  // clubbing premium, credits, the Razorpay charge) works on one number.
+  const MARKET_MULT = (window.Geo && window.Geo.market.mult) || 1;
+  if (MARKET_MULT !== 1) {
+    SERVICES.forEach((s) => { s.price = Math.round(s.price * MARKET_MULT); });
+    PACKAGES.forEach((p) => { p.price = Math.round(p.price * MARKET_MULT); });
+  }
+
+  // Amounts held in the system are always the INR we actually charge. Abroad we
+  // lead with the local figure; the rupee amount rides along wherever it matters.
+  const inr = (n) => (window.Geo ? window.Geo.show(n) : '₹' + Number(n).toLocaleString('en-IN'));
+  const inrRaw = (n) => '₹' + Number(n).toLocaleString('en-IN');
 
   load(); // after uid/inr — load() may backfill jobs & bills for old orders
 
@@ -484,6 +497,7 @@ window.DB = (() => {
   const remote = {
     init: remoteInit,
     isRemote: true,
+    client: sb,   // shared with RDB (js/research-db.js) so there's one auth client
 
     getSession() { return sessionUserId ? (data.users.find(u => u.id === sessionUserId) || null) : null; },
     setSession() { /* session is owned by Supabase Auth */ },
@@ -590,7 +604,7 @@ window.DB = (() => {
   };
 
   const api = {
-    SERVICES, PACKAGES, REFERRAL_BONUS, REFERRAL_CAP, inr,
+    SERVICES, PACKAGES, REFERRAL_BONUS, REFERRAL_CAP, inr, inrRaw,
     upsertUserByEmail, getUser, updateUser,
     setSession, getSession, clearSession,
     createOrder, ordersFor,

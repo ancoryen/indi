@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Indizilla Research — Test your idea on a simulated market before you build it</title>
+  <meta name="description" content="Describe an idea and the decision you're stuck on. Indizilla Research runs a panel of AI personas against a generated survey and hands back a decision memo — verdict, evidence, the strongest objection, and your next test.">
+  <link rel="canonical" href="https://indizilla.com/research">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Indizilla Research — Pressure-test your idea before you build it">
+  <meta property="og:description" content="A simulated market-research panel that returns a decision memo, not a wall of text.">
+  <meta property="og:url" content="https://indizilla.com/research">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="services.html">Services</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="research.html" class="active">Research</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <a class="btn btn-primary" href="research-new.html">Start a study <span class="arrow">↗</span></a>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero rsrch-hero">
+    <div class="container">
+      <div class="rsrch-hero-grid">
+        <div>
+          <div class="eyebrow">Indizilla Research</div>
+          <h1>Test your idea on a simulated <span class="hl">market</span> before you build it.</h1>
+          <p class="lead">Describe your idea and the decision you're stuck on. We assemble a panel of AI personas, put a generated survey in front of them, and hand back a decision memo — a verdict, the evidence, the strongest objection, and the one test to run next.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="research-new.html">Start a study <span class="arrow">↗</span></a>
+            <a class="btn btn-secondary" href="research-sample.html">See a sample report</a>
+          </div>
+          <div class="trust-strip"><span>~50 responses in minutes</span><span>Credits, not subscriptions</span><span>A memo, not a transcript</span><span>Made for founders &amp; PMs</span></div>
+        </div>
+
+        <!-- Animated mock product demo, in a fake browser frame -->
+        <div class="demo-frame reveal" id="hero-demo" aria-label="Product preview">
+          <div class="demo-chrome">
+            <span class="demo-dot"></span><span class="demo-dot"></span><span class="demo-dot"></span>
+            <span class="demo-url">indizilla.com/research/new</span>
+          </div>
+          <div class="demo-body">
+            <div class="demo-panel is-active" data-step="1">
+              <div class="demo-tag">Step 1 · Describe</div>
+              <p class="demo-lead">“A weekly meal-prep box for busy hostel students, ₹1,200/month.”</p>
+              <div class="demo-field">Decision: launch in one city first, or three?</div>
+            </div>
+            <div class="demo-panel" data-step="2">
+              <div class="demo-tag">Step 2 · Audience</div>
+              <div class="demo-chips"><span>Students</span><span>18–24</span><span>India</span><span>Skeptics 40%</span></div>
+              <p class="demo-note">Pre-filled from your idea — review before we generate questions.</p>
+            </div>
+            <div class="demo-panel" data-step="3">
+              <div class="demo-tag">Step 3 · Survey</div>
+              <ol class="demo-survey"><li>What would make this a clear “yes”?</li><li>What's fair to pay per month?</li><li>Strongest reason you'd say no?</li></ol>
+              <p class="demo-note">6 questions · 2 follow-up probes per persona</p>
+            </div>
+            <div class="demo-panel" data-step="4">
+              <div class="demo-tag">Decision memo</div>
+              <div class="demo-verdict verdict-conditional">Conditional go</div>
+              <p class="demo-lead">Strong pull among on-campus students; price is the sticking point.</p>
+              <div class="demo-stats"><b>58%</b> positive · <b>3.7/5</b> intent · <b>₹900</b> price ceiling</div>
+            </div>
+          </div>
+          <button class="demo-toggle" type="button" aria-label="Pause preview">Pause</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ONE-LINER -->
+  <section class="section rsrch-oneliner">
+    <div class="container">
+      <p>The most expensive mistake in product is believing your own idea too early. A simulated panel won't love you back — that's the point.</p>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Why not just ask an AI chatbot?</div>
+        <h2>A single chat gives you one voice. Research gives you a panel.</h2>
+      </div>
+      <div class="compare-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr><th>What matters</th><th>Asking one AI chat</th><th class="col-us">Indizilla Research</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Perspective</td><td>One agreeable answer</td><td class="col-us">~50 distinct personas who disagree</td></tr>
+            <tr><td>Persona depth</td><td>Generic “average user”</td><td class="col-us">Roles, ages, markets, skepticism you set</td></tr>
+            <tr><td>Consistency</td><td>Changes every time you ask</td><td class="col-us">Same panel, same survey, repeatable</td></tr>
+            <tr><td>Method</td><td>Freeform conversation</td><td class="col-us">A structured survey with follow-up probes</td></tr>
+            <tr><td>Follow-up</td><td>You re-prompt and hope</td><td class="col-us">Interrogate the panel, on the record</td></tr>
+            <tr><td>Output</td><td>A wall of text to interpret</td><td class="col-us">A decision memo: verdict, evidence, next test</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS (scroll-spy) -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">How it works</div>
+        <h2>Five steps from a hunch to a decision.</h2>
+      </div>
+      <div class="spy">
+        <ol class="spy-steps">
+          <li class="spy-step is-active" data-spy="1"><span class="spy-num">1</span><div><h4>Describe the decision</h4><p>Your idea, and the specific call you need to make. A quick AI check flags anything too vague before you spend a credit.</p></div></li>
+          <li class="spy-step" data-spy="2"><span class="spy-num">2</span><div><h4>Shape the audience</h4><p>We infer a target market from your idea. Adjust markets, ages, roles and how skeptical the panel should be.</p></div></li>
+          <li class="spy-step" data-spy="3"><span class="spy-num">3</span><div><h4>Generate the survey</h4><p>A short, structured questionnaire is written for your decision. Edit or regenerate any question.</p></div></li>
+          <li class="spy-step" data-spy="4"><span class="spy-num">4</span><div><h4>Run the panel</h4><p>Personas answer independently, with follow-up probes. Credits are spent only when you launch.</p></div></li>
+          <li class="spy-step" data-spy="5"><span class="spy-num">5</span><div><h4>Read the memo</h4><p>A verdict, the numbers behind it, the strongest objection, and the single next test worth running.</p></div></li>
+        </ol>
+        <div class="spy-stage" aria-hidden="true">
+          <div class="spy-card is-active" data-spy="1"><div class="demo-tag">Describe</div><p class="demo-lead">“A booking app for local barbers.”</p><div class="demo-field">Decision: subscription or per-booking fee?</div></div>
+          <div class="spy-card" data-spy="2"><div class="demo-tag">Audience</div><div class="demo-chips"><span>Barbers</span><span>Salon owners</span><span>25–44</span><span>India</span></div></div>
+          <div class="spy-card" data-spy="3"><div class="demo-tag">Survey</div><ol class="demo-survey"><li>How do you take bookings today?</li><li>What would make you switch?</li><li>Fair monthly price?</li></ol></div>
+          <div class="spy-card" data-spy="4"><div class="demo-tag">Panel running</div><div class="demo-stats"><b>50</b> personas · <b>6</b> questions · <b>2</b> probes each</div></div>
+          <div class="spy-card" data-spy="5"><div class="demo-tag">Decision memo</div><div class="demo-verdict verdict-go">Go</div><p class="demo-lead">Per-booking wins; subscription scares off part-timers.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAMPLE TEASER -->
+  <section class="section">
+    <div class="container">
+      <div class="case-card reveal">
+        <div>
+          <span class="tag">Sample output</span>
+          <h3>Every study ends as a memo you can act on.</h3>
+          <p style="color:var(--text-soft); font-size:15px; line-height:1.6;">Not a transcript to wade through — a one-page decision memo. The headline finding, the evidence behind it, the strongest reason it might fail, and the specific next test. Share it, or interrogate the panel further.</p>
+          <div style="margin-top:24px;">
+            <a class="btn btn-secondary" href="research-sample.html">Open a sample report</a>
+          </div>
+        </div>
+        <div class="result">
+          <div class="demo-verdict verdict-conditional" style="margin-bottom:14px;">Conditional go</div>
+          <div class="num">58%</div>
+          <div class="label">reacted positively across the panel</div>
+          <div style="height:1px; background:rgba(255,255,255,0.12); margin:18px 0;"></div>
+          <div class="num" style="font-size:26px;">₹900</div>
+          <div class="label">price ceiling before intent drops off</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USE CASES (bento) -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">What people test</div>
+        <h2>Point it at the decision keeping you up at night.</h2>
+      </div>
+      <div class="bento">
+        <a class="bento-card b-lg reveal" href="research-new.html?usecase=validate">
+          <h4>Validate a new idea</h4>
+          <p>Before you build, find out whether anyone actually wants it — and who.</p>
+        </a>
+        <a class="bento-card reveal" href="research-new.html?usecase=messaging">
+          <h4>Test your messaging</h4>
+          <p>Which way of describing it lands, and which falls flat.</p>
+        </a>
+        <a class="bento-card b-dark reveal" href="research-new.html?usecase=features">
+          <h4>Prioritise features</h4>
+          <p>Learn what your audience would trade everything else for.</p>
+        </a>
+        <a class="bento-card reveal" href="research-new.html?usecase=campaign">
+          <h4>Pre-test a campaign</h4>
+          <p>See how a concept reads before you spend the ad budget.</p>
+        </a>
+        <a class="bento-card b-accent reveal" href="research-new.html?usecase=pricing">
+          <h4>Pricing research</h4>
+          <p>Find the ceiling where interest starts to fall away.</p>
+        </a>
+        <a class="bento-card reveal" href="research-new.html?usecase=market-entry">
+          <h4>Market entry</h4>
+          <p>Sense-check a new city or segment before you commit.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALIDATION LADDER -->
+  <section class="section">
+    <div class="container">
+      <div class="split">
+        <div>
+          <div class="eyebrow">Fair pushback</div>
+          <h2>A simulated panel isn't the truth. It's a faster rung on the ladder.</h2>
+          <p class="lead" style="margin-top:14px;">Ask biased friends and you'll hear what you want. Ask one AI and you'll get a confident average. Run real interviews and you'll wait weeks and pay for it. Research sits in between — cheap and consistent enough to kill bad ideas early, honest enough to point you at the real test.</p>
+        </div>
+        <ul class="ladder reveal" style="align-self:center;">
+          <li><span>Friends &amp; family</span> Warm, biased, unreliable</li>
+          <li><span>One AI chat</span> Fast, but a single agreeable voice</li>
+          <li class="rung-us"><span>Indizilla Research</span> A consistent panel that pushes back</li>
+          <li><span>Real interviews</span> The truth — slow and expensive</li>
+          <li><span>Live experiment</span> The final word, once you're committed</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY TEASER + PRIVACY -->
+  <section class="section">
+    <div class="container">
+      <div class="grid-3">
+        <div class="card reveal">
+          <h4>Where the data comes from</h4>
+          <p>Personas are grounded in your audience settings and any reference pages you add. We're upfront about what this can and can't tell you.</p>
+          <a class="link-hint" href="research-methodology.html">Read the methodology →</a>
+        </div>
+        <div class="card reveal">
+          <h4>Your inputs stay yours</h4>
+          <p>Studies are private to your account. We don't sell your ideas, and you can delete a study whenever you like.</p>
+          <a class="link-hint" href="contact.html">Questions about privacy? →</a>
+        </div>
+        <div class="card reveal">
+          <h4>Priced in credits</h4>
+          <p>No subscription. Buy a pack, spend credits per study, top up when you need to. A follow-up question costs 2 credits.</p>
+          <a class="link-hint" href="research-pricing.html">See credit packs →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">FAQ</div>
+        <h2>The questions we get most.</h2>
+      </div>
+      <div class="faq faq-single">
+        <details>
+          <summary>Is this a replacement for real user research?</summary>
+          <p class="answer">No — and we won't pretend otherwise. It's a fast, cheap way to pressure-test an idea and find the sharpest questions <em>before</em> you invest in real interviews or a live test. Use it to decide what's worth testing for real.</p>
+        </details>
+        <details>
+          <summary>How many personas answer each study?</summary>
+          <p class="answer">A Quick Pulse study runs 50. Larger modes go up to 400 for higher-confidence reads across segments. You pick the mode when you launch, and it's shown in credits before you spend anything.</p>
+        </details>
+        <details>
+          <summary>How much does a study cost?</summary>
+          <p class="answer">You buy credits in packs and spend them per study — a Quick Pulse is 100 credits. There's no subscription. <a href="research-pricing.html" style="color:var(--accent-ink); font-weight:600;">See the packs</a>.</p>
+        </details>
+        <details>
+          <summary>Can I dig into the results?</summary>
+          <p class="answer">Yes. Every memo comes with the response mix and sample quotes, and you can ask the panel follow-up questions (2 credits each) to probe a segment or an objection further.</p>
+        </details>
+        <details>
+          <summary>Who is this for?</summary>
+          <p class="answer">Founders, product managers and marketers making an early call with incomplete information — the moment where a week of clarity is worth more than a month of debate.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section footer-cta" style="border-top:none;">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Stop guessing. Run a study.</h2>
+        <p>Describe your idea and the decision you're stuck on. You'll have a memo in minutes, not weeks.</p>
+        <a class="btn btn-on-dark" href="research-new.html">Start a study <span class="arrow">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="brand-band" aria-hidden="true">INDIZILLA RESEARCH™ — INDIZILLA RESEARCH™ — INDIZILLA RESEARCH™</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+          INDIZILLA
+        </a>
+        <p class="tagline">Test your idea on a simulated market before you build it.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Research</h4>
+        <a href="research.html">Overview</a>
+        <a href="research-pricing.html">Credit packs</a>
+        <a href="research-sample.html">Sample report</a>
+        <a href="research-methodology.html">Methodology</a>
+        <a href="research-new.html">Start a study</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="index.html">Indizilla home</a>
+        <a href="services.html">Services</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="login.html">Client login</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="mailto:hello@indizilla.com">hello@indizilla.com</a>
+        <a href="contact.html">Send a message</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <label class="market-note">Prices shown for <select class="market-picker" aria-label="Choose your market"></select></label>
+      <span>© 2026 Indizilla. All rights reserved.</span>
+      <span>Simulated research is a starting point, not the final word.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/geo.js"></script>
+<script src="js/main.js"></script>
+<script src="js/research.js"></script>
+</body>
+</html>

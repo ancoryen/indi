@@ -30,8 +30,8 @@
   /* ---- overview ---- */
   function renderCredits() {
     const bal = DB.creditBalance(user.id);
-    $('credit-balance').textContent = DB.inr(bal);
-    $('credits-available').textContent = DB.inr(bal);
+    $('credit-balance').textContent = DB.inrRaw(bal);
+    $('credits-available').textContent = DB.inrRaw(bal);
     $('credits-row').hidden = bal <= 0;
   }
 
@@ -61,7 +61,7 @@
             <div class="row-title" style="font-size:14px;">${esc(e.reason)}</div>
             <div class="row-sub">${fmtDate(e.date)}</div>
           </div>
-          <strong style="color:${e.amount > 0 ? 'var(--accent-ink)' : 'var(--text-soft)'};">${e.amount > 0 ? '+' : ''}${DB.inr(e.amount)}</strong>
+          <strong style="color:${e.amount > 0 ? 'var(--accent-ink)' : 'var(--text-soft)'};">${e.amount > 0 ? '+' : ''}${DB.inrRaw(e.amount)}</strong>
         </div>`).join('')
       : '<p style="font-size:14px; color:var(--text-muted);">Nothing yet — referral bonuses and redemptions show up here.</p>';
   }
@@ -182,7 +182,7 @@
             <div class="row-title" style="font-size:14px;">${esc(r.newUserName || 'New client')}</div>
             <div class="row-sub">${fmtDate(r.date)} · ${r.quarter}</div>
           </div>
-          <span class="row-sub" style="color:${r.credited ? 'var(--accent-ink)' : 'var(--text-muted)'};">${r.credited ? '+' + DB.inr(DB.REFERRAL_BONUS) : 'Cap reached'}</span>
+          <span class="row-sub" style="color:${r.credited ? 'var(--accent-ink)' : 'var(--text-muted)'};">${r.credited ? '+' + DB.inrRaw(DB.REFERRAL_BONUS) : 'Cap reached'}</span>
         </div>`).join('')
       : '<p style="font-size:14px; color:var(--text-muted);">No referrals yet. Share your link with a business owner you know.</p>';
   }
@@ -219,4 +219,7 @@
     recalc();
   }
   renderAll();
+
+  // Research product tab (js/research-dash.js) — optional, isolated module.
+  if (window.ResearchDash) { try { await window.ResearchDash.init(user); } catch (e) { /* research tab unavailable */ } }
 })();

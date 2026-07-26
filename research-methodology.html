@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methodology — how Indizilla Research works, and its limits</title>
+  <meta name="description" content="How simulated persona research works, what it's good for, where it falls short, and how to use it responsibly alongside real user research.">
+  <link rel="canonical" href="https://indizilla.com/research-methodology">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="theme-color" content="#FAFAF8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#14161A':'#FAFAF8';})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Indizilla home">
+      <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+      INDIZILLA
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
+      <a href="services.html">Services</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="research.html" class="active">Research</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode"><span class="tt-opt tt-light">Light</span><span class="tt-opt tt-dark">Dark</span></button>
+    <div class="header-cta">
+      <a class="btn btn-primary" href="research-new.html">Start a study <span class="arrow">↗</span></a>
+    </div>
+    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="section-tight">
+    <div class="container container-narrow">
+      <div class="eyebrow">Methodology</div>
+      <h1 style="font-size:clamp(30px,4.5vw,46px);">How it works — and where it stops.</h1>
+      <p class="lead" style="margin-top:14px;">We'd rather you trust this tool for the right reasons than oversell it. Here's what happens under the hood, what it's genuinely useful for, and the honest limits you should hold it to.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container container-narrow prose">
+      <h2>The five steps, in plain terms</h2>
+      <p>When you start a study, your idea and decision go through a quick specificity check — a lightweight AI pass that flags vague inputs before you spend anything. From your description we infer a plausible target audience, which you then correct: markets, ages, roles, and how skeptical the panel should be.</p>
+      <p>A short structured survey is generated for your specific decision. Each simulated persona answers it independently, shaped by the audience profile you set, and can be probed with follow-up questions. Their responses are aggregated into a decision memo: a headline verdict, the numbers behind it, the strongest objection, and a recommended next test.</p>
+
+      <h2>Why a panel beats a single answer</h2>
+      <p>Ask one model one question and you get one confident answer that shifts every time you re-ask. A panel does something different: it holds the survey and the audience constant, varies the personas, and reports the <em>distribution</em> — how many were positive, how skeptics differed, where a segment breaks from the average. Consistency is the feature. It lets you compare two ideas, two prices or two messages on the same footing.</p>
+
+      <h2>What this is good for</h2>
+      <ul class="two-col-list">
+        <li><span class="tick ok">✓</span> Killing weak ideas early, before you build</li>
+        <li><span class="tick ok">✓</span> Finding which segment cares most</li>
+        <li><span class="tick ok">✓</span> Comparing messaging, framing or names</li>
+        <li><span class="tick ok">✓</span> Sniffing out a price ceiling</li>
+        <li><span class="tick ok">✓</span> Surfacing the objection you'll have to answer</li>
+        <li><span class="tick ok">✓</span> Deciding what's worth testing for real</li>
+      </ul>
+
+      <h2>What it is <em>not</em></h2>
+      <ul class="two-col-list">
+        <li><span class="tick no">✕</span> A substitute for talking to real customers</li>
+        <li><span class="tick no">✕</span> A source of true market-size numbers</li>
+        <li><span class="tick no">✕</span> A predictor of exact conversion rates</li>
+        <li><span class="tick no">✕</span> A reason to skip a live experiment</li>
+        <li><span class="tick no">✕</span> Reliable for niche B2B where personas are thin</li>
+        <li><span class="tick no">✕</span> The final word on anything you're betting the company on</li>
+      </ul>
+
+      <h2>How to read the confidence signals</h2>
+      <p>Every memo carries a verdict and a confidence level. Treat a <strong>Go</strong> as “worth building a real test around,” a <strong>Conditional go</strong> as “works for a segment under a condition — confirm the condition,” and a <strong>No</strong> as “reshape the idea or the audience.” The percentages are directional, not precise: a 58% is meaningfully different from 30%, but not from 55%. Watch the <em>gap</em> between segments more than any single number.</p>
+
+      <h2>Where the persona behaviour comes from</h2>
+      <p>Personas are grounded in the audience settings you provide and any reference pages you attach for extra context. Their responses reflect broad, well-documented patterns in how people react to new offers — enthusiasm tempered by cost, trust and switching effort — not the private opinions of any real, named individual. Simulated respondents can share the blind spots of the models behind them, which is exactly why we frame the output as a starting point, not a verdict on reality.</p>
+
+      <div class="callout">
+        <h3>The one-sentence version</h3>
+        <p>Use Indizilla Research to decide, cheaply and consistently, <strong>what's worth testing for real</strong> — then go test it for real.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section footer-cta" style="border-top:none;">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Put a decision through it.</h2>
+        <p>You'll know within minutes whether it's worth a week of real research — or a rethink.</p>
+        <a class="btn btn-on-dark" href="research-new.html">Start a study <span class="arrow">↗</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
+          INDIZILLA
+        </a>
+        <p class="tagline">Test your idea on a simulated market before you build it.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Research</h4>
+        <a href="research.html">Overview</a>
+        <a href="research-pricing.html">Credit packs</a>
+        <a href="research-sample.html">Sample report</a>
+        <a href="research-methodology.html">Methodology</a>
+        <a href="research-new.html">Start a study</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="index.html">Indizilla home</a>
+        <a href="services.html">Services</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="login.html">Client login</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="mailto:hello@indizilla.com">hello@indizilla.com</a>
+        <a href="contact.html">Send a message</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <label class="market-note">Prices shown for <select class="market-picker" aria-label="Choose your market"></select></label>
+      <span>© 2026 Indizilla. All rights reserved.</span>
+      <span>Honest about what simulation can and can't do.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/geo.js"></script>
+<script src="js/main.js"></script>
+<script src="js/research.js"></script>
+</body>
+</html>

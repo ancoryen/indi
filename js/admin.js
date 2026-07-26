@@ -104,7 +104,7 @@
             <span style="font-size:12px; color:var(--text-muted);">${esc(u.email)}${u.business ? ' · ' + esc(u.business) : ''}</span>
           </td>
           <td>${DB.ordersFor(u.id).length}</td>
-          <td><strong>${DB.inr(DB.creditBalance(u.id))}</strong></td>
+          <td><strong>${DB.inrRaw(DB.creditBalance(u.id))}</strong></td>
           <td style="white-space:nowrap;">
             <input type="number" data-amt placeholder="±₹" style="width:90px;">
             <button class="btn-mini" data-adjust>Apply</button>
@@ -129,7 +129,7 @@
         <div>
           <code style="font-weight:700; font-size:13px;">${esc(c.code)}</code>
           <span class="status-pill" style="margin-left:8px; ${c.active === false ? '' : 'background:var(--accent-tint); color:var(--accent-ink);'}">${c.active === false ? 'off' : 'active'}</span>
-          <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">${esc(c.desc || '')} · ${c.type === 'percent' ? c.value + '%' : DB.inr(c.value)}${c.minAmount ? ' · min ' + DB.inr(c.minAmount) : ''}${c.maxDiscount ? ' · cap ' + DB.inr(c.maxDiscount) : ''}</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">${esc(c.desc || '')} · ${c.type === 'percent' ? c.value + '%' : DB.inrRaw(c.value)}${c.minAmount ? ' · min ' + DB.inrRaw(c.minAmount) : ''}${c.maxDiscount ? ' · cap ' + DB.inrRaw(c.maxDiscount) : ''}</div>
         </div>
         <button class="btn-mini" data-toggle="${esc(c.code)}">${c.active === false ? 'Enable' : 'Disable'}</button>
       </div>`).join('');
@@ -165,4 +165,7 @@
   renderBills();
   renderUsers();
   renderCoupons();
+
+  // Research admin tab (js/research-admin.js) — optional, isolated module.
+  if (window.ResearchAdmin) { try { await window.ResearchAdmin.init(user); } catch (e) { /* research admin unavailable */ } }
 })();

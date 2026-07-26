@@ -30,8 +30,8 @@
     </a>
     <nav class="main-nav" id="main-nav" aria-label="Main">
       <a href="services.html">Services</a>
-      <a href="cart.html">À la carte</a>
       <a href="pricing.html" class="active">Pricing</a>
+      <a href="research.html">Research</a>
       <a href="portfolio.html">Portfolio</a>
       <a href="about.html">About</a>
       <a href="resources.html">Resources</a>
@@ -66,7 +66,7 @@
 
         <div class="price-card reveal">
           <div class="tier">Starter</div>
-          <div class="amount">₹4,999 <small>starts from · one-time</small></div>
+          <div class="amount"><span data-inr="4999" data-inr-note>₹4,999</span> <small>starts from · one-time</small></div>
           <p class="for-whom"><strong>Who it's for:</strong> businesses getting online properly for the first time. You need to be findable and look trustworthy — this week, not this quarter.</p>
           <ul>
             <li>Google Business Profile, set up and optimized</li>
@@ -81,7 +81,7 @@
         <div class="price-card featured reveal">
           <div class="badge">Most chosen</div>
           <div class="tier">Growth</div>
-          <div class="amount">₹14,999 <small>starts from · one-time</small></div>
+          <div class="amount"><span data-inr="14999" data-inr-note>₹14,999</span> <small>starts from · one-time</small></div>
           <p class="for-whom"><strong>Who it's for:</strong> businesses ready to look fully professional — a complete identity and a real website that answers customers' questions before they call.</p>
           <ul>
             <li>Everything in Starter</li>
@@ -97,7 +97,7 @@
 
         <div class="price-card reveal">
           <div class="tier">Partner</div>
-          <div class="amount">₹9,999 <small>starts from · per month</small></div>
+          <div class="amount"><span data-inr="9999" data-inr-note>₹9,999</span> <small>starts from · per month</small></div>
           <p class="for-whom"><strong>Who it's for:</strong> businesses that want marketing handled, month after month, by someone who already knows them. We become your marketing department.</p>
           <ul>
             <li>Website maintenance, backups and updates</li>
@@ -183,19 +183,19 @@
           <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
           INDIZILLA
         </a>
-        <p class="tagline">You don't need ₹50,000 to start looking professional.</p>
+        <p class="tagline">You don’t need <span data-anchor>₹50,000</span> to start looking professional.</p>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
         <a href="about.html">About</a>
         <a href="portfolio.html">Portfolio</a>
-        <a href="cart.html">À la carte</a>
         <a href="pricing.html">Pricing</a>
         <a href="resources.html">Resources</a>
         <a href="login.html">Client login</a>
       </div>
       <div class="footer-col">
         <h4>Services</h4>
+        <a href="cart.html">Build your own bundle</a>
         <a href="services.html#visibility">Get found on Google</a>
         <a href="services.html#branding">Brand identity</a>
         <a href="services.html#website">Websites</a>
@@ -209,6 +209,7 @@
       </div>
     </div>
     <div class="footer-bottom">
+      <label class="market-note">Prices shown for <select class="market-picker" aria-label="Choose your market"></select></label>
       <span>© 2026 Indizilla. All rights reserved.</span>
       <span>Simple. Affordable. Built to last.</span>
     </div>
@@ -219,6 +220,7 @@
   <a class="btn btn-primary" href="contact.html">Get Started <span class="arrow">↗</span></a>
 </div>
 
+<script src="js/geo.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

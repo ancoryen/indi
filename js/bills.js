@@ -33,10 +33,10 @@ window.Bills = (() => {
         </div>
 
         <div class="bill-rows">
-          ${bill.items.map(i => `<div class="sum-line"><span>${esc(i.label)}</span><strong>${DB.inr(i.amount)}</strong></div>`).join('')}
-          ${bill.discount ? `<div class="sum-line"><span>Coupon${bill.couponCode ? ' (' + esc(bill.couponCode) + ')' : ''}</span><strong>−${DB.inr(bill.discount)}</strong></div>` : ''}
-          ${bill.creditsUsed ? `<div class="sum-line"><span>Credits redeemed</span><strong>−${DB.inr(bill.creditsUsed)}</strong></div>` : ''}
-          <div class="sum-line bill-total"><span>Total paid</span><strong>${DB.inr(bill.total)}</strong></div>
+          ${bill.items.map(i => `<div class="sum-line"><span>${esc(i.label)}</span><strong>${DB.inrRaw(i.amount)}</strong></div>`).join('')}
+          ${bill.discount ? `<div class="sum-line"><span>Coupon${bill.couponCode ? ' (' + esc(bill.couponCode) + ')' : ''}</span><strong>−${DB.inrRaw(bill.discount)}</strong></div>` : ''}
+          ${bill.creditsUsed ? `<div class="sum-line"><span>Credits redeemed</span><strong>−${DB.inrRaw(bill.creditsUsed)}</strong></div>` : ''}
+          <div class="sum-line bill-total"><span>Total paid</span><strong>${DB.inrRaw(bill.total)}</strong></div>
         </div>
 
         <div style="font-size:12px; color:#8C8F91; line-height:1.6;">
@@ -73,7 +73,7 @@ window.Bills = (() => {
           <div class="row-sub">${new Date(b.date).toLocaleDateString('en-IN')} · ${esc(b.items[0].label)}${u ? ' · ' + esc(u.name || u.email || '') : ''}</div>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-          <strong>${DB.inr(b.total)}</strong>
+          <strong>${DB.inrRaw(b.total)}</strong>
           <button class="btn-mini" type="button" data-bill="${b.id}">View</button>
         </div>
       </div>`;

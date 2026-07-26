@@ -25,6 +25,7 @@
     <nav class="main-nav" id="main-nav" aria-label="Main">
       <a href="services.html">Services</a>
       <a href="pricing.html">Pricing</a>
+      <a href="research.html">Research</a>
       <a href="portfolio.html">Portfolio</a>
       <a href="about.html">About</a>
       <a href="resources.html">Resources</a>
@@ -61,6 +62,7 @@
         <button class="dash-tab" data-tab="order" type="button">Order a service</button>
         <button class="dash-tab" data-tab="bills" type="button">Bills</button>
         <button class="dash-tab" data-tab="referrals" type="button">Referrals</button>
+        <button class="dash-tab" data-tab="research" type="button">Research</button>
         <button class="dash-tab" data-tab="account" type="button">Account</button>
         <a class="dash-tab" id="admin-link" href="admin.html" hidden>Admin ↗</a>
       </div>
@@ -170,6 +172,35 @@
         </div>
       </section>
 
+      <!-- RESEARCH -->
+      <section class="dash-panel" id="panel-research" hidden>
+        <div class="rdash-head">
+          <div class="card rdash-balance">
+            <div class="cp-label">Study credits</div>
+            <div class="rdash-num" id="rd-balance">—</div>
+            <a class="btn btn-primary" href="research-new.html">Start a study <span class="arrow">↗</span></a>
+            <a class="rd-help" href="research.html">How Research works →</a>
+          </div>
+          <div class="card">
+            <h3 style="font-size:16px; margin-bottom:6px;">Buy credits</h3>
+            <p class="hint" style="margin-bottom:14px;">Prepaid packs, no subscription — credits never expire.</p>
+            <div class="rd-packs" id="rd-packs"></div>
+            <p id="rd-buy-msg" class="hint" style="margin-top:10px;" hidden></p>
+          </div>
+        </div>
+
+        <div class="dash-grid" style="margin-top:18px;">
+          <div class="card">
+            <h3 style="font-size:17px; margin-bottom:14px;">Your studies</h3>
+            <div id="rd-studies"></div>
+          </div>
+          <div class="card" style="align-self:start;">
+            <h3 style="font-size:17px; margin-bottom:14px;">Credit history</h3>
+            <div id="rd-ledger"></div>
+          </div>
+        </div>
+      </section>
+
       <!-- ACCOUNT -->
       <section class="dash-panel" id="panel-account" hidden>
         <div class="card" style="max-width:520px;">
@@ -205,6 +236,7 @@
 <footer class="site-footer">
   <div class="container">
     <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <label class="market-note">Prices shown for <select class="market-picker" aria-label="Choose your market"></select></label>
       <span>© 2026 Indizilla. All rights reserved.</span>
       <span><a href="contact.html">Need help? Contact us</a></span>
     </div>
@@ -213,11 +245,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
+<script src="js/geo.js"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/payments.js"></script>
 <script src="js/bills.js"></script>
 <script src="js/main.js"></script>
+<script src="js/research-engine.js"></script>
+<script src="js/research-db.js"></script>
+<script src="js/research-dash.js"></script>
 <script src="js/dashboard.js"></script>
 </body>
 </html>

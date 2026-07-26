@@ -56,6 +56,7 @@
         <button class="dash-tab" data-tab="bills" type="button">Bills</button>
         <button class="dash-tab" data-tab="users" type="button">Clients</button>
         <button class="dash-tab" data-tab="coupons" type="button">Coupons</button>
+        <button class="dash-tab" data-tab="research" type="button">Research</button>
       </div>
 
       <!-- JOB SHEET -->
@@ -114,6 +115,30 @@
         </div>
       </section>
 
+      <!-- RESEARCH -->
+      <section class="dash-panel" id="panel-research" hidden>
+        <div class="dash-grid">
+          <div class="card">
+            <h3 style="font-size:17px; margin-bottom:6px;">All studies</h3>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Every study run across all clients. Read-only.</p>
+            <div class="table-wrap">
+              <table class="admin-table" id="rstudies-table">
+                <thead><tr><th>Study</th><th>Client</th><th>Mode</th><th>Credits</th><th>Verdict</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="align-self:start;">
+            <h3 style="font-size:17px; margin-bottom:14px;">Adjust study credits</h3>
+            <div class="form-field"><label for="ra-user">Client</label><select id="ra-user"></select></div>
+            <div class="form-field" style="margin-top:12px;"><label for="ra-amt">Amount <span class="opt">(± credits)</span></label><input id="ra-amt" type="number" placeholder="±credits"></div>
+            <div class="form-field" style="margin-top:12px;"><label for="ra-reason">Reason</label><input id="ra-reason" type="text" placeholder="Goodwill top-up"></div>
+            <button class="btn btn-primary" type="button" id="ra-apply" style="margin-top:16px;">Apply</button>
+            <p id="ra-msg" style="font-size:13px; color:var(--accent-ink); margin-top:10px;" hidden></p>
+          </div>
+        </div>
+      </section>
+
     </div>
   </section>
 </main>
@@ -121,6 +146,7 @@
 <footer class="site-footer">
   <div class="container">
     <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <label class="market-note">Prices shown for <select class="market-picker" aria-label="Choose your market"></select></label>
       <span>© 2026 Indizilla — admin console.</span>
       <span><a href="dashboard.html">Back to dashboard</a></span>
     </div>
@@ -129,10 +155,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
+<script src="js/geo.js"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/bills.js"></script>
 <script src="js/main.js"></script>
+<script src="js/research-engine.js"></script>
+<script src="js/research-db.js"></script>
+<script src="js/research-admin.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

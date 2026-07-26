@@ -363,3 +363,217 @@ grant  insert, update, delete on public.coupons to authenticated; -- RLS restric
 grant  update on public.profiles to authenticated;      -- RLS restricts to self/admin
 
 -- Done. Tables, triggers, RPCs and policies are in place.
+
+
+-- ============================================================================
+-- Indizilla Research — AI-simulated market research (studies, personas, memos)
+-- Study credits are a SEPARATE currency from the ₹ referral credit_ledger above.
+-- Prices and mode costs live server-side so the browser can never spoof them.
+-- Everything below is idempotent — safe to re-run with the rest of this file.
+-- ============================================================================
+
+-- ------------------------------------------------------- research credit packs
+create table if not exists public.research_packs (
+  id        text primary key,
+  name      text not null,
+  price_inr integer not null,          -- whole rupees charged via Razorpay
+  credits   integer not null,          -- study credits granted
+  popular   boolean not null default false,
+  active    boolean not null default true,
+  sort      integer not null default 0
+);
+
+insert into public.research_packs (id, name, price_inr, credits, popular, sort) values
+  ('starter', 'Starter', 399,  450,  false, 1),
+  ('growth',  'Growth',  899,  1050, true,  2),
+  ('pro',     'Pro',     1499, 1900, false, 3)
+on conflict (id) do nothing;
+
+-- Study modes: respondents + credit cost, server-owned (mirrors service_timeline_days).
+create or replace function public.research_mode_credits(m text)
+returns integer language sql immutable as $$
+  select case m
+    when 'quick-pulse' then 100  when 'pulse-plus' then 200
+    when 'signal-plus' then 400  when 'prism'      then 900
+    else 100 end
+$$;
+
+create or replace function public.research_mode_respondents(m text)
+returns integer language sql immutable as $$
+  select case m
+    when 'quick-pulse' then 50   when 'pulse-plus' then 100
+    when 'signal-plus' then 200  when 'prism'      then 400
+    else 50 end
+$$;
+
+-- ------------------------------------------------------------ research studies
+create table if not exists public.research_studies (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references public.profiles(id) on delete cascade,
+  title        text not null default 'Untitled study',
+  idea         text not null default '',
+  decision_q   text not null default '',
+  urls         jsonb not null default '[]',
+  audience     jsonb not null default '{}',
+  mode         text not null default 'quick-pulse',
+  respondents  integer not null default 50,
+  credits_cost integer not null default 100,
+  status       text not null default 'running' check (status in ('draft','running','ready','failed')),
+  survey       jsonb not null default '[]',
+  personas     jsonb not null default '[]',
+  memo         jsonb not null default '{}',
+  followups    jsonb not null default '[]',
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+-- ------------------------------------------------ research credit ledger (study credits)
+create table if not exists public.research_credit_ledger (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references public.profiles(id) on delete cascade,
+  amount     integer not null,        -- + purchased, - spent on studies / follow-ups
+  reason     text not null default '',
+  created_at timestamptz not null default now()
+);
+
+-- -------------------------------------------------------------------- RPCs
+
+create or replace function public.research_credit_balance(uid uuid)
+returns integer language sql stable security definer set search_path = public as
+$$ select coalesce(sum(amount), 0)::integer from public.research_credit_ledger where user_id = uid $$;
+
+-- Grant study credits after a successful pack purchase. Price/credits come from
+-- the packs table, never the client. (Razorpay signature check is a later Edge
+-- Function; treat p_payment_id as an unverified reference for now.)
+create or replace function public.buy_research_credits(p_pack_id text, p_payment_id text default null)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_uid  uuid := auth.uid();
+  v_pack public.research_packs;
+begin
+  if v_uid is null then raise exception 'Not signed in'; end if;
+  select * into v_pack from public.research_packs where id = p_pack_id and active = true;
+  if not found then raise exception 'Unknown credit pack'; end if;
+
+  insert into public.research_credit_ledger (user_id, amount, reason)
+  values (v_uid, v_pack.credits,
+          v_pack.name || ' pack — ' || v_pack.credits || ' credits'
+            || coalesce(' (ref ' || p_payment_id || ')', ''));
+
+  return jsonb_build_object('ok', true, 'credits', v_pack.credits,
+                            'balance', public.research_credit_balance(v_uid));
+end $$;
+
+-- Start a study: re-validate the mode cost, ensure balance, deduct atomically,
+-- and create the study row. The survey/personas/memo are filled in afterwards by
+-- save_study_result (client mock engine today, server LLM later).
+create or replace function public.create_study(
+  p_title text, p_idea text, p_decision_q text,
+  p_urls jsonb default '[]', p_audience jsonb default '{}',
+  p_mode text default 'quick-pulse'
+) returns public.research_studies
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid   uuid := auth.uid();
+  v_cost  integer := public.research_mode_credits(p_mode);
+  v_resp  integer := public.research_mode_respondents(p_mode);
+  v_bal   integer;
+  v_study public.research_studies;
+begin
+  if v_uid is null then raise exception 'Not signed in'; end if;
+  v_bal := public.research_credit_balance(v_uid);
+  if v_bal < v_cost then raise exception 'Not enough credits (need %, have %)', v_cost, v_bal; end if;
+
+  insert into public.research_studies (user_id, title, idea, decision_q, urls, audience,
+                                       mode, respondents, credits_cost, status)
+  values (v_uid, coalesce(nullif(trim(p_title), ''), 'Untitled study'),
+          p_idea, p_decision_q, coalesce(p_urls, '[]'), coalesce(p_audience, '{}'),
+          p_mode, v_resp, v_cost, 'running')
+  returning * into v_study;
+
+  insert into public.research_credit_ledger (user_id, amount, reason)
+  values (v_uid, -v_cost, 'Study: ' || v_study.title);
+
+  return v_study;
+end $$;
+
+-- Save generated output onto the caller's own study.
+create or replace function public.save_study_result(
+  p_study_id uuid, p_survey jsonb, p_personas jsonb, p_memo jsonb
+) returns public.research_studies
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid   uuid := auth.uid();
+  v_study public.research_studies;
+begin
+  if v_uid is null then raise exception 'Not signed in'; end if;
+  update public.research_studies
+     set survey = coalesce(p_survey, '[]'), personas = coalesce(p_personas, '[]'),
+         memo = coalesce(p_memo, '{}'), status = 'ready', updated_at = now()
+   where id = p_study_id and user_id = v_uid
+  returning * into v_study;
+  if not found then raise exception 'Study not found'; end if;
+  return v_study;
+end $$;
+
+-- Ask a follow-up question of the simulated panel: 2 credits, appended to the study.
+create or replace function public.research_followup(
+  p_study_id uuid, p_question text, p_answer jsonb
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_uid  uuid := auth.uid();
+  v_bal  integer;
+begin
+  if v_uid is null then raise exception 'Not signed in'; end if;
+  if not exists (select 1 from public.research_studies where id = p_study_id and user_id = v_uid) then
+    raise exception 'Study not found';
+  end if;
+  v_bal := public.research_credit_balance(v_uid);
+  if v_bal < 2 then raise exception 'Not enough credits (need 2, have %)', v_bal; end if;
+
+  insert into public.research_credit_ledger (user_id, amount, reason)
+  values (v_uid, -2, 'Follow-up question');
+
+  update public.research_studies
+     set followups = followups || jsonb_build_array(
+           jsonb_build_object('q', p_question, 'a', p_answer, 'at', now())),
+         updated_at = now()
+   where id = p_study_id and user_id = v_uid;
+
+  return jsonb_build_object('ok', true, 'balance', public.research_credit_balance(v_uid));
+end $$;
+
+-- Admin: adjust a user's study credits (parallels admin_adjust_credits for ₹).
+create or replace function public.admin_adjust_research_credits(p_user_id uuid, p_amount integer, p_reason text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  insert into public.research_credit_ledger (user_id, amount, reason)
+  values (p_user_id, p_amount, coalesce(p_reason, 'Adjustment by admin'));
+end $$;
+
+-- --------------------------------------------------------------------- RLS
+alter table public.research_packs          enable row level security;
+alter table public.research_studies        enable row level security;
+alter table public.research_credit_ledger  enable row level security;
+
+drop policy if exists "research_packs read"   on public.research_packs;
+drop policy if exists "research_packs admin"   on public.research_packs;
+create policy "research_packs read"  on public.research_packs for select using (active = true or public.is_admin());
+create policy "research_packs admin" on public.research_packs for all
+  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "research_studies read" on public.research_studies;
+create policy "research_studies read" on public.research_studies for select
+  using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "research_ledger read" on public.research_credit_ledger;
+create policy "research_ledger read" on public.research_credit_ledger for select
+  using (user_id = auth.uid() or public.is_admin());
+
+-- Browser gets no direct writes to studies or the ledger — everything goes
+-- through the security-definer RPCs above.
+revoke insert, update, delete on public.research_studies, public.research_credit_ledger from anon, authenticated;
+grant  insert, update, delete on public.research_packs to authenticated; -- RLS restricts to admins
+
+-- Done — Indizilla Research schema is in place.
