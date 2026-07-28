@@ -494,6 +494,17 @@ window.DB = (() => {
     return data.users.find(u => u.id === sessionUserId) || null;
   }
 
+  // Supabase matches redirect URLs against an exact allowlist. The live site is
+  // registered under the bare domain, so a visitor who arrives on www (or any
+  // other alias) would otherwise be handed a redirect Supabase rejects, and the
+  // sign-in silently bounces back to the login page. Always hand it the
+  // canonical host on production; keep the real origin for localhost/previews.
+  function authBase() {
+    const site = (cfg.siteUrl || '').replace(/\/+$/, '');
+    if (site && /(^|\.)indizilla\.com$/i.test(location.hostname)) return site + '/';
+    return location.origin + location.pathname.replace(/[^/]*$/, '');
+  }
+
   const remote = {
     init: remoteInit,
     isRemote: true,
@@ -506,15 +517,15 @@ window.DB = (() => {
     async signOut() { await sb.auth.signOut(); sessionUserId = null; },
 
     async signInGoogle(next) {
-      const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+      const base = authBase();
       await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: base + (/^(dashboard|cart|admin)\.html$/.test(next || '') ? next : 'dashboard.html') }
+        options: { redirectTo: base + (/^(dashboard|cart|admin|research-new)\.html$/.test(next || '') ? next : 'dashboard.html') }
       });
     },
 
     async signInEmailOtp(email) {
-      const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+      const base = authBase();
       const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: base + 'dashboard.html' } });
       if (error) throw error;
     },

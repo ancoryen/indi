@@ -65,6 +65,9 @@ window.Geo = (() => {
     try {
       const saved = localStorage.getItem(STORE_KEY);
       if (saved && MARKETS[saved]) return saved;
+      // A location already confirmed by IP beats the timezone guess on reload.
+      const auto = localStorage.getItem(STORE_KEY + '_auto');
+      if (auto && MARKETS[auto]) return auto;
     } catch (e) { /* private mode */ }
 
     try {
@@ -147,8 +150,52 @@ window.Geo = (() => {
     });
   }
 
+  // Timezone and locale are instant and private, but a traveller or a browser
+  // set to en-US in Mumbai gets the wrong market. Confirm against the real
+  // network location once, cache it, and only re-render if it disagrees.
+  const RESOLVED_KEY = 'indizilla_market_ip';
+  async function confirmByLocation() {
+    let manual = null;
+    try { manual = localStorage.getItem(STORE_KEY); } catch (e) { /* ignore */ }
+    if (manual) return;                       // an explicit choice always wins
+
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(RESOLVED_KEY)); } catch (e) { /* ignore */ }
+    const fresh = cached && (Date.now() - cached.at) < 7 * 24 * 3600 * 1000;
+
+    let cc = fresh ? cached.cc : null;
+    if (!cc) {
+      try {
+        const r = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
+        if (!r.ok) return;
+        cc = ((await r.json()).country_code || '').toUpperCase();
+        if (!cc) return;
+        try { localStorage.setItem(RESOLVED_KEY, JSON.stringify({ cc, at: Date.now() })); } catch (e) { /* ignore */ }
+      } catch (e) { return; }                 // offline or blocked — keep the guess
+    }
+
+    const resolved = MARKETS[cc] ? cc : 'IN';  // unlisted market -> Indian baseline
+    if (resolved === code) return;
+
+    const wasMult = market.mult;
+    code = resolved;
+    market = MARKETS[code];
+    try { localStorage.setItem(STORE_KEY + '_auto', code); } catch (e) { /* ignore */ }
+
+    // db.js already scaled its catalogue with the previous multiplier, so a
+    // change in the multiplier has to be picked up by a reload — once only.
+    if (market.mult !== wasMult && !sessionStorage.getItem('indizilla_geo_reloaded')) {
+      try { sessionStorage.setItem('indizilla_geo_reloaded', '1'); } catch (e) { /* ignore */ }
+      location.reload();
+      return;
+    }
+    apply(document);                           // same multiplier, currency only
+    document.querySelectorAll('.market-picker').forEach((sel) => { sel.value = code; });
+  }
+
   function init() {
     apply(document);
+    confirmByLocation();
     // Currency switcher, wherever a page provides the mount point.
     document.querySelectorAll('.market-picker').forEach((sel) => {
       Object.keys(MARKETS).forEach((c) => {

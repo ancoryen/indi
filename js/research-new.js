@@ -3,8 +3,11 @@
 // server-side by RDB.runStudy → create_study RPC.
 
 (async () => {
-  const user = await Auth.requireLogin();
-  if (!user) return;
+  // Browsing is free: anyone can shape a study and see what it would cost.
+  // Signing in is only required to spend credits and run it.
+  await DB.init();
+  const user = DB.getSession();
+  const DRAFT_KEY = 'indizilla_study_draft';
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -197,6 +200,15 @@
     $('ls-detail').textContent = m.respondents + ' personas · ' + state.survey.length + ' questions';
     $('ls-credits').textContent = m.credits;
     $('ls-balance').textContent = state.balance + ' credits';
+    if (!user) {
+      // Signed out: the button becomes the sign-in step, never a dead end.
+      $('launch-warn').hidden = false;
+      $('launch-warn').innerHTML = 'Sign in to run this study — we’ll keep everything you’ve filled in.';
+      $('launch').textContent = 'Sign in to run this study';
+      $('launch').disabled = false;
+      $('launch').classList.remove('is-disabled');
+      return;
+    }
     const short = state.balance < m.credits;
     $('launch-warn').hidden = !short;
     if (short) $('launch-warn').innerHTML = `You need ${m.credits} credits but have ${state.balance}. <a href="dashboard.html#research">Buy more credits →</a>`;
@@ -207,6 +219,20 @@
   const RUN_MSGS = ['Assembling your panel…', 'Personas are reading your idea…', 'Collecting responses…', 'Weighing the objections…', 'Writing your decision memo…'];
   $('launch').addEventListener('click', async () => {
     const m = RDB.modeById(state.mode);
+
+    // Signed out: stash the whole draft so nothing typed is lost across sign-in.
+    if (!user) {
+      const urls = Array.from(document.querySelectorAll('#url-list input')).map(i => i.value.trim()).filter(Boolean).slice(0, 10);
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          idea: state.idea, decision: state.decision, urls,
+          mode: state.mode, audience: state.audience, survey: state.survey
+        }));
+      } catch (e) { /* private mode — they'll just re-enter it */ }
+      location.href = 'login.html?next=research-new.html';
+      return;
+    }
+
     if (state.balance < m.credits) { updateLaunch(); return; }
 
     const urls = Array.from(document.querySelectorAll('#url-list input')).map(i => i.value.trim()).filter(Boolean).slice(0, 10);
@@ -242,6 +268,24 @@
     if (n === 2 && !state.inferred) fillAudience();
     if (n === 3) { if (!state.survey.length) genSurvey(); updateLaunch(); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Came back from signing in? Put the draft back exactly as they left it.
+  if (user) {
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (e) { /* ignore */ }
+    if (draft && draft.idea) {
+      state.idea = draft.idea;
+      state.decision = draft.decision || '';
+      state.mode = draft.mode || state.mode;
+      if (draft.audience) { state.audience = draft.audience; state.inferred = true; }
+      if (Array.isArray(draft.survey) && draft.survey.length) state.survey = draft.survey;
+      if ($('w-idea')) $('w-idea').value = state.idea;
+      if ($('w-decision')) $('w-decision').value = state.decision;
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* ignore */ }
+      renderModes();
+      goStep(state.survey.length ? 3 : 1);
+    }
   }
 
   await loadBalance();

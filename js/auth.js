@@ -39,7 +39,7 @@ window.Auth = (() => {
     }
     DB.setSession(user.id);
     const next = nextTarget();
-    window.location.href = /^(dashboard|cart|admin)\.html$/.test(next) ? next : 'dashboard.html';
+    window.location.href = /^(dashboard|cart|admin|research-new)\.html$/.test(next) ? next : 'dashboard.html';
   }
 
   /* ---- Google button ---- */
