@@ -103,7 +103,7 @@
     const params = new URLSearchParams(location.search);
     if (user) {
       const next = params.get('next') || '';
-      window.location.href = /^(dashboard|cart|admin)\.html$/.test(next) ? next : 'dashboard.html';
+      window.location.href = /^(dashboard|cart|admin|research-new)\.html$/.test(next) ? next : 'dashboard.html';
       return;
     }
     // Prefill referral code from a shared link (?ref=INDI-XXXX)

@@ -7,7 +7,24 @@ window.Auth = (() => {
 
   async function requireLogin() {
     const user = await DB.init();
-    if (!user) { window.location.href = 'login.html'; return null; }
+    if (!user) {
+      // Carry the intended page across, so signing in lands where they meant to go.
+      const here = location.pathname.split('/').pop() || '';
+      const q = /^(dashboard|cart|admin|research-new)\.html$/.test(here) ? '?next=' + here : '';
+      window.location.href = 'login.html' + q;
+      return null;
+    }
+    return user;
+  }
+
+  // Belt and braces for the login page: anyone who arrives already signed in
+  // (a stale tab, a bookmark, a redirect that raced) goes straight through
+  // instead of being shown a form they don't need.
+  async function redirectIfSignedIn() {
+    const user = await DB.init();
+    if (!user) return null;
+    const next = nextTarget();
+    window.location.replace(/^(dashboard|cart|admin|research-new)\.html$/.test(next) ? next : 'dashboard.html');
     return user;
   }
 
@@ -106,5 +123,5 @@ window.Auth = (() => {
     });
   }
 
-  return { requireLogin, logout, initGoogleButton, bindEmailForm };
+  return { requireLogin, redirectIfSignedIn, logout, initGoogleButton, bindEmailForm };
 })();

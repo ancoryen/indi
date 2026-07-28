@@ -447,12 +447,42 @@ window.DB = (() => {
     data.referrals = (rf.data || []).map(mapReferral);
   }
 
+  // Returning from an OAuth provider, the URL carries a code that supabase-js
+  // exchanges for a session in the background. getSession() can win that race
+  // and report "signed out" a beat before the session lands — which sent people
+  // back to the login page holding a perfectly valid token. When the URL shows
+  // we've just come back from a provider, wait for the exchange to settle.
+  async function settledSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) return session;
+
+    const returning = /[?&]code=/.test(location.search) ||
+                      /access_token=|refresh_token=|[?&]error=/.test(location.hash + location.search);
+    if (!returning) return null;
+
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = (s) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { sub.data.subscription.unsubscribe(); } catch (e) { /* ignore */ }
+        resolve(s);
+      };
+      const sub = sb.auth.onAuthStateChange((_event, s) => { if (s) finish(s); });
+      const timer = setTimeout(async () => {
+        const { data: { session: late } } = await sb.auth.getSession();
+        finish(late || null);
+      }, 6000);
+    });
+  }
+
   async function remoteInit() {
     data = { users: [], orders: [], creditLedger: [], referrals: [], coupons: [], jobs: [], bills: [] };
     const cps = await sb.from('coupons').select('*');
     data.coupons = (cps.data || []).map(mapCoupon);
 
-    const { data: { session } } = await sb.auth.getSession();
+    const session = await settledSession();
     if (!session) { sessionUserId = null; return null; }
     sessionUserId = session.user.id;
 
