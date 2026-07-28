@@ -200,6 +200,8 @@ h4 { font-size: 16px; font-weight: 700; }
   font-size: 16px;
   letter-spacing: -0.03em;
   text-transform: uppercase;
+  flex-shrink: 0;        /* the wordmark holds its width; nothing overlaps it */
+  white-space: nowrap;
 }
 .brand img { width: 36px; height: 36px; object-fit: contain; }
 
@@ -211,6 +213,7 @@ h4 { font-size: 16px; font-weight: 700; }
   display: flex;
   align-items: center;
   gap: 2px;
+  min-width: 0;          /* let the nav absorb the squeeze, never the wordmark */
 }
 .main-nav a {
   font-size: 11px;
@@ -263,7 +266,7 @@ h4 { font-size: 16px; font-weight: 700; }
 }
 .nav-toggle svg { width: 24px; height: 24px; stroke: var(--text); }
 
-@media (max-width: 960px) {
+@media (max-width: 1150px) {
   .main-nav {
     display: none;
     position: absolute;
