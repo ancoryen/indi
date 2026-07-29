@@ -3,11 +3,22 @@
 Marketing site + client platform (dashboard, à la carte, admin console, jobs, bills,
 credits, referrals). Static frontend; Supabase for database + auth; Razorpay for payments.
 
+> **New here? Read [`docs/START-HERE.md`](docs/START-HERE.md) first** — accounts,
+> architecture, business rules, gotchas and open items in one place. This file is
+> the deeper reference for the data layer and the Research product.
+
+> ⚠️ **The Research tables are missing in production.** `research_packs`,
+> `research_studies` and `research_credit_ledger` return 404 while every core
+> table returns 200 — `supabase/migration.sql` has not been re-run since the
+> Research feature was added. Run step 1 below to fix it.
+
 ## Go-live checklist
 
-### 1. Database (one-time)
+### 1. Database — re-run whenever `migration.sql` changes
 Open the [Supabase SQL Editor](https://supabase.com/dashboard/project/iykuvppjmmatsvrrtwra/sql),
-paste the whole of `supabase/migration.sql`, press **Run**. Safe to re-run.
+paste the whole of `supabase/migration.sql`, press **Run**. It is idempotent, so
+this is the normal way to apply schema changes — not a one-time step. There is no
+migration tool; the file is the whole schema.
 
 ### 2. Keys → `js/config.js`
 | Key | Where to get it |
