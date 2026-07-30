@@ -322,15 +322,29 @@ window.RPanel = (() => {
       const votes = labels.map(() => []);
 
       personas.forEach((p, i) => {
-        const scored = labels.map(label => {
-          const r = rng(hash('branch' + label + p.archetype + p.worldview + i));
-          return { label, score: p.lean * 0.5 + (r() * 2 - 1), r };
-        });
-        const win = scored.slice().sort((x, y) => y.score - x.score)[0];
-        const idx = labels.indexOf(win.label);
-        const enthusiasm = win.score + p.lean * 0.5;
-        const intent = enthusiasm > 0.9 ? 5 : enthusiasm > 0.3 ? 4
-                     : enthusiasm > -0.3 ? 3 : enthusiasm > -0.9 ? 2 : 1;
+        // A real panel supplies each person's stated choice. The seeded path
+        // below is the mock's stand-in and is used only when it is absent.
+        const stated = responses[i] && responses[i].branch;
+        let idx = -1, intent;
+        if (stated) {
+          idx = labels.findIndex(l => l.toLowerCase() === String(stated).toLowerCase());
+          if (idx === -1) idx = labels.findIndex(l =>
+            String(stated).toLowerCase().indexOf(l.toLowerCase().slice(0, 18)) !== -1 ||
+            l.toLowerCase().indexOf(String(stated).toLowerCase().slice(0, 18)) !== -1);
+          intent = responses[i].branchIntent || responses[i].intent || 3;
+        }
+        if (idx === -1) {
+          const scored = labels.map(label => {
+            const r = rng(hash('branch' + label + p.archetype + p.worldview + i));
+            return { label, score: p.lean * 0.5 + (r() * 2 - 1) };
+          });
+          const win = scored.slice().sort((x, y) => y.score - x.score)[0];
+          idx = labels.indexOf(win.label);
+          const enthusiasm = win.score + p.lean * 0.5;
+          intent = enthusiasm > 0.9 ? 5 : enthusiasm > 0.3 ? 4
+                 : enthusiasm > -0.3 ? 3 : enthusiasm > -0.9 ? 2 : 1;
+        }
+        const win = { label: labels[idx] };
         const u = b.utterance({
           text: 'I would go with ' + win.label + '.',
           sentiment: intent >= 4 ? 'positive' : intent === 3 ? 'neutral' : 'skeptical',
@@ -351,9 +365,11 @@ window.RPanel = (() => {
         node.verdict = (share >= 55 && meanIntent >= 3.5) ? 'go'
                      : (share >= 35 || (share >= 25 && meanIntent >= 3.5)) ? 'conditional'
                      : 'no';
-        node.why = n + ' of ' + personas.length + ' preferred this option (' +
-                   Math.round(share) + '%), mean intent ' +
-                   (Math.round(meanIntent * 10) / 10) + '/5.';
+        // Counts only. The percentage is computed at read time with
+        // largest-remainder rounding so the column adds up; baking a second
+        // rounding in here made the memo disagree with its own table by a point.
+        node.why = n + ' of ' + personas.length + ' preferred this option, ' +
+                   'mean intent ' + (Math.round(meanIntent * 10) / 10) + '/5.';
         const a = assumeList[i] || assumeList[0];
         if (a) b.link(node, a, 'depends_on', false);
       });

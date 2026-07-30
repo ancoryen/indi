@@ -172,12 +172,12 @@ window.RDB = (() => {
   // engineVersion 2, so v2 ships without a schema migration. v1 top-level
   // fields are mirrored alongside it, which keeps anything reading the old
   // shape working while the report learns to render the graph.
-  function v2Result(study, survey) {
+  function v2Result(study, survey, graphOverride, stratOverride) {
     if (!(window.RPanel && window.REvidence && window.RStrategist)) return null;
 
-    const graph = window.RPanel.run(Object.assign({}, study, { survey }));
+    const graph = graphOverride || window.RPanel.run(Object.assign({}, study, { survey }));
     const ev = window.REvidence.evidence(graph);
-    const strat = window.RStrategist.strategise(graph, ev);
+    const strat = stratOverride || window.RStrategist.strategise(graph, ev);
 
     const rec = (ev.branches || []).find(b => b.label === strat.recommendation.branch)
              || (ev.branches || [])[0] || {};
@@ -223,13 +223,25 @@ window.RDB = (() => {
     };
   }
 
-  async function runStudy(input, presetSurvey) {
+  async function runStudy(input, presetSurvey, onStage) {
     const study = await back.createStudy(input);          // server deducts credits
     const survey = (presetSurvey && presetSurvey.length)
       ? presetSurvey
       : E.generateSurvey(study.idea, study.decision_q, study.audience);
 
-    const v2 = v2Result(study, survey);
+    // Live generation when the Edge Function is reachable, mock otherwise.
+    // RLive.run() never throws: a study always completes, and provenance
+    // records which engine actually produced it.
+    let graph = null, strat = null;
+    if (window.RLive) {
+      graph = await window.RLive.run(Object.assign({}, study, { survey }), onStage);
+      if (graph && (graph.meta || {}).engine === 'live' && window.REvidence) {
+        try { onStage && onStage('strategist'); } catch (e) { /* ignore */ }
+        strat = await window.RLive.strategist(graph, window.REvidence.evidence(graph));
+      }
+    }
+
+    const v2 = v2Result(study, survey, graph, strat);
     if (v2) return await back.saveResult(study.id, survey, v2.personas, v2.memo);
 
     // v1 fallback: the graph modules were not loaded on this page.

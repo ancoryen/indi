@@ -361,6 +361,27 @@ window.REvidence = (() => {
     }).sort((a, b) => b.removesLoad - a.removesLoad);
   }
 
+  /* ---- 9b. branch shares, rounded so the column adds up ---- */
+  // Rounding each branch independently made a two-option fork read 53% and 48%.
+  // Largest-remainder keeps the displayed shares summing to the true total —
+  // the same fix the objection table needed.
+  function branchShares(g) {
+    const panelN = panelStats(g).n || 1;
+    const rows = G.of(g, 'branch').map(b => {
+      const votes = G.sources(g, b.id, 'supports').filter(u => u.type === 'utterance');
+      return { b, votes, evaluated: votes.length > 0 && b.verdict != null };
+    });
+    const exact = rows.map(r => r.votes.length / panelN * 100);
+    const target = Math.round(exact.reduce((a, x) => a + x, 0));
+    const floors = exact.map(Math.floor);
+    let left = target - floors.reduce((a, x) => a + x, 0);
+    const order = exact.map((e, i) => ({ i, frac: e - Math.floor(e) }))
+      .sort((a, x) => x.frac - a.frac);
+    const shares = floors.slice();
+    for (let k = 0; k < order.length && left > 0; k++, left--) shares[order[k].i]++;
+    return rows.map((r, i) => Object.assign({}, r, { share: shares[i] }));
+  }
+
   /* ---- 10. one call: everything the Strategist is allowed to consume ---- */
   function evidence(g) {
     const check = G.validate(g);
@@ -380,20 +401,17 @@ window.REvidence = (() => {
       // A branch reports what was MEASURED. `evaluated` is false when no
       // persona assessed it, and an unevaluated branch carries no verdict, no
       // share and no margin — there is nowhere in the shape to put one.
-      branches: G.of(g, 'branch').map(b => {
-        const votes = G.sources(g, b.id, 'supports').filter(u => u.type === 'utterance');
-        const evaluated = votes.length > 0 && b.verdict != null;
-        const panelN = panelStats(g).n || 1;
+      branches: branchShares(g).map(({ b, votes, evaluated, share }) => {
         return {
           id: b.id, label: b.label,
           evaluated,
           verdict: evaluated ? b.verdict : null,
           why: evaluated ? b.why : 'Not evaluated by this panel.',
           n: votes.length,
-          preferenceShare: evaluated ? Math.round(votes.length / panelN * 100) : null,
+          preferenceShare: evaluated ? share : null,
           meanIntent: evaluated && votes.length
             ? r1(mean(votes.map(u => u.intent))) : null,
-          marginOfError: evaluated ? propCI(votes.length, panelN) : null,
+          marginOfError: evaluated ? propCI(votes.length, panelStats(g).n || 1) : null,
           restsOn: G.targets(g, b.id, 'depends_on').map(a => a.text)
         };
       }),
@@ -415,6 +433,6 @@ window.REvidence = (() => {
   return {
     panelStats, samplingError, nForMargin, segments, polarisation,
     objectionMass, objectionClusters, loadBearing, leverage, confidence,
-    experiments, evidence
+    experiments, branchShares, evidence
   };
 })();

@@ -62,7 +62,11 @@ window.RViews = (() => {
         block('recommendation', {
           type: 'branches',
           branches: ev.branches.map(b => ({
-            label: b.label, verdict: b.verdict, verdictLabel: VERDICT_LABEL[b.verdict] || b.verdict,
+            label: b.label, verdict: b.verdict,
+            verdictLabel: b.evaluated ? (VERDICT_LABEL[b.verdict] || b.verdict) : 'Not evaluated',
+            evaluated: b.evaluated,
+            // Single source for the share — the view never re-rounds it.
+            preferenceShare: b.preferenceShare, n: b.n, marginOfError: b.marginOfError,
             why: b.why, restsOn: b.restsOn,
             recommended: b.label === strat.recommendation.branch
           }))

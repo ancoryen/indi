@@ -577,3 +577,88 @@ revoke insert, update, delete on public.research_studies, public.research_credit
 grant  insert, update, delete on public.research_packs to authenticated; -- RLS restricts to admins
 
 -- Done — Indizilla Research schema is in place.
+
+
+-- ============================================================================
+-- Research v2 — additions for the live inference pipeline.
+-- Idempotent like the rest of this file; re-run the whole thing.
+-- ============================================================================
+
+-- Refund on failure. create_study deducts credits up front, which was fine
+-- while generation was a free client-side mock. Once a run costs real money a
+-- mid-run failure would leave the user charged for nothing.
+create or replace function public.fail_study(p_study_id uuid, p_reason text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare v_study public.research_studies;
+begin
+  select * into v_study from public.research_studies
+    where id = p_study_id and status = 'running'
+    for update;
+  if not found then
+    return jsonb_build_object('ok', false, 'reason', 'not running');  -- idempotent
+  end if;
+  if v_study.user_id <> auth.uid() and not public.is_admin() then
+    raise exception 'Not your study';
+  end if;
+
+  update public.research_studies
+     set status = 'failed', updated_at = now()
+   where id = p_study_id;
+
+  insert into public.research_credit_ledger (user_id, amount, reason)
+  values (v_study.user_id, v_study.credits_cost,
+          'Refund — study failed: ' || coalesce(p_reason, 'unknown'));
+
+  return jsonb_build_object('ok', true, 'refunded', v_study.credits_cost,
+                            'balance', public.research_credit_balance(v_study.user_id));
+end $$;
+
+-- Close the read-then-write gap in create_study. Two concurrent runs could both
+-- pass the balance check and overdraw; an advisory lock held for the
+-- transaction serialises them per user.
+create or replace function public.create_study(
+  p_title text, p_idea text, p_decision_q text,
+  p_urls jsonb default '[]', p_audience jsonb default '{}',
+  p_mode text default 'quick-pulse'
+) returns public.research_studies
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid   uuid := auth.uid();
+  v_cost  integer := public.research_mode_credits(p_mode);
+  v_resp  integer := public.research_mode_respondents(p_mode);
+  v_bal   integer;
+  v_study public.research_studies;
+begin
+  if v_uid is null then raise exception 'Not signed in'; end if;
+
+  perform pg_advisory_xact_lock(hashtext(v_uid::text));
+
+  v_bal := public.research_credit_balance(v_uid);
+  if v_bal < v_cost then raise exception 'Not enough credits (need %, have %)', v_cost, v_bal; end if;
+
+  insert into public.research_studies (user_id, title, idea, decision_q, urls, audience,
+                                       mode, respondents, credits_cost, status)
+  values (v_uid, coalesce(nullif(trim(p_title), ''), 'Untitled study'),
+          p_idea, p_decision_q, coalesce(p_urls, '[]'), coalesce(p_audience, '{}'),
+          p_mode, v_resp, v_cost, 'running')
+  returning * into v_study;
+
+  insert into public.research_credit_ledger (user_id, amount, reason)
+  values (v_uid, -v_cost, 'Study: ' || v_study.title);
+
+  return v_study;
+end $$;
+
+-- Balance was readable for any profile UUID. Infeasible to enumerate, but a
+-- security-definer function with no caller check is the wrong default.
+create or replace function public.research_credit_balance(uid uuid)
+returns integer language plpgsql stable security definer set search_path = public as $$
+begin
+  if uid is distinct from auth.uid() and not public.is_admin() then
+    raise exception 'Not your balance';
+  end if;
+  return coalesce((select sum(amount) from public.research_credit_ledger
+                    where user_id = uid), 0)::integer;
+end $$;
+
+-- Done — v2 additions in place.

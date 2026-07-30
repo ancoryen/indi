@@ -38,6 +38,11 @@ window.RDecision = (() => {
         '<div class="db-top"><span class="db-label">' + esc(br.label) + '</span>' +
         '<span class="db-verdict v-' + br.verdict + '">' + esc(br.verdictLabel) + '</span></div>' +
         (br.recommended ? '<div class="db-rec">Recommended</div>' : '') +
+        (br.evaluated && br.preferenceShare != null
+          ? '<div class="db-share"><span class="dbs-pct">' + br.preferenceShare + '%</span>' +
+            '<span class="dbs-bar"><i style="width:' + br.preferenceShare + '%"></i></span>' +
+            '<span class="dbs-n">preferred (n=' + br.n + ', ±' + br.marginOfError + 'pp)</span></div>'
+          : '') +
         '<p>' + esc(br.why) + '</p></div>').join('') + '</div>';
     }
     if (b.type === 'because') {
