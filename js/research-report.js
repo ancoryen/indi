@@ -114,17 +114,69 @@
   $('report-survey').innerHTML = (study.survey || []).map(q => `<li>${esc(q.text)} <span class="sq-type">${esc(q.type)}</span></li>`).join('');
 
   /* ---- Follow-ups ---- */
+  /* ---- Conversation ----
+     v2 studies get the graph-backed engine: a question is routed to query,
+     variant, new panel or external verification before any answer is composed,
+     so there is no path on which it improvises. Pre-v2 studies keep the old
+     plain-text follow-ups. */
+  const convoGraph = (memo.engineVersion === 2 && memo.graph && window.RConvo) ? memo.graph : null;
+  const convoEv = convoGraph ? REvidence.evidence(convoGraph) : null;
+
+  function renderAnswer(a) {
+    if (typeof a === 'string') return `<div class="fu-a"><span>Panel</span>${esc(a)}</div>`;
+    // A refusal must never be badged as an answer. An unanswered query carries
+    // the query op, so using opLabel here would have labelled "nothing in this
+    // study speaks to that" as "Answered from this study".
+    const badge = a.answeredFromGraph
+      ? '<span class="fu-op op-query">From this study</span>'
+      : (a.op === 'query'
+          ? '<span class="fu-op op-external">Not in this study</span>'
+          : `<span class="fu-op op-${esc(a.op)}">${esc(a.opLabel || 'Needs more')}</span>`);
+    return `<div class="fu-a">
+      <span>Panel</span>
+      <div class="fu-body">
+        ${badge}
+        <p>${esc(a.text)}</p>
+        ${(a.quotes || []).length ? `<ul class="fu-quotes">${a.quotes.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+        ${a.nextStep ? `<p class="fu-next"><strong>What it would take:</strong> ${esc(a.nextStep)}</p>` : ''}
+        ${a.answeredFromGraph && (a.cites || []).length
+          ? `<p class="fu-cite">Computed from ${a.cites.length} node${a.cites.length === 1 ? '' : 's'} in this study${a.costsCredits ? '' : ' · no credits used'}</p>`
+          : ''}
+      </div>
+    </div>`;
+  }
+
   function renderFollowups() {
     const fu = study.followups || [];
     $('followups').innerHTML = fu.length
       ? fu.map(f => `
         <div class="fu">
           <div class="fu-q"><span>You</span>${esc(f.q)}</div>
-          <div class="fu-a"><span>Panel</span>${esc(typeof f.a === 'string' ? f.a : JSON.stringify(f.a))}</div>
+          ${renderAnswer(f.a)}
         </div>`).join('')
-      : '<p class="hint">No follow-ups yet. Ask the panel anything about these results.</p>';
+      : '<p class="hint">No questions yet. Ask anything about these results — answers come from ' +
+        'this study, or tell you what it would take to find out.</p>';
   }
   renderFollowups();
+
+  /* ---- Suggested questions, derived from this study's own findings ---- */
+  if (convoGraph && window.RViews) {
+    try {
+      const convo = RViews.conversation(convoGraph, convoEv, {});
+      const host = document.createElement('div');
+      host.className = 'fu-suggest';
+      host.innerHTML = '<div class="fs-label">Try asking</div>' + convo.suggestions.map(s =>
+        `<button type="button" class="fs-chip op-${esc(s.op)}" data-q="${esc(s.text)}" title="${esc(s.why)}">${esc(s.text)}</button>`
+      ).join('');
+      $('followups').parentNode.insertBefore(host, $('followups'));
+      host.addEventListener('click', (e) => {
+        const b = e.target.closest('.fs-chip');
+        if (!b) return;
+        $('ask-input').value = b.getAttribute('data-q');
+        ask();
+      });
+    } catch (e) { if (window.console) console.warn('[report] suggestions failed:', e); }
+  }
 
   $('ask-btn').addEventListener('click', ask);
   $('ask-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') ask(); });
@@ -135,7 +187,20 @@
     $('ask-btn').disabled = true;
     $('ask-msg').hidden = true;
     try {
-      const answer = await RDB.askFollowup(study, q);
+      let answer;
+      if (convoGraph) {
+        // Graph-backed. A query is a read over data already paid for, so it
+        // costs nothing — charging credits for a lookup would be exactly the
+        // quiet upsell the confidence section refuses to make. Credits are
+        // spent when a variant or new panel actually runs.
+        answer = RConvo.ask(convoGraph, convoEv, q);
+        if (answer.costsCredits && answer.requiresRun) {
+          // Routing only: the run itself is a separate, priced operation.
+          answer = Object.assign({}, answer, { pendingRun: true });
+        }
+      } else {
+        answer = await RDB.askFollowup(study, q);   // pre-v2 study
+      }
       study.followups = (study.followups || []).concat({ q, a: answer, at: new Date().toISOString() });
       $('ask-input').value = '';
       renderFollowups();

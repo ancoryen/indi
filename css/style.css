@@ -1649,3 +1649,30 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   .dm { grid-template-columns: 1fr; gap: 4px; }
   .dm-kind { justify-self: start; }
 }
+
+/* ------------------------------------------------------------ Conversation
+   Graph-backed answers. The op badge tells the reader where an answer came
+   from — this study, or what it would take to find out. */
+.fu-suggest { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+.fs-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); width: 100%; }
+.fs-chip { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); text-align: left; }
+.fs-chip:hover { border-color: var(--accent); background: var(--accent-tint); }
+.fs-chip.op-query { border-left: 3px solid var(--v-go); }
+.fs-chip.op-variant { border-left: 3px solid var(--v-cond); }
+.fs-chip.op-panel { border-left: 3px solid var(--accent); }
+
+.fu-body { display: block; }
+.fu-op { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px; }
+.fu-op.op-query { color: var(--v-go); background: var(--v-go-bg); }
+.fu-op.op-variant { color: var(--v-cond); background: var(--v-cond-bg); }
+.fu-op.op-panel { color: var(--accent-ink); background: var(--accent-tint); }
+.fu-op.op-external { color: var(--v-no); background: var(--v-no-bg); }
+.fu-quotes { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; color: var(--text-soft); font-style: italic; }
+.fu-next { margin: 10px 0 0; font-size: 13px; padding: 8px 10px; background: var(--surface-alt); border-radius: var(--r-sm); }
+.fu-cite { margin: 8px 0 0; font-size: 11px; color: var(--text-muted); }
+
+@media (max-width: 720px) {
+  .fs-chip { font-size: 12px; }
+}
