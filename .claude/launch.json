@@ -6,6 +6,13 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "http-server", "-p", "4173", "-c-1", "."],
       "port": 4173
+    },
+    {
+      "name": "indizilla-sandbox",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "http-server", "-p", "4174", "-c-1",
+        "C:/Users/ashis/AppData/Local/Temp/claude/D--INDIZILLA/b7a6013b-78b0-45a2-bd16-f77dee6d1e01/scratchpad/sandbox"],
+      "port": 4174
     }
   ]
 }
