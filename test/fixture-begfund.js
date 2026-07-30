@@ -16,8 +16,9 @@ global.window = global;
 eval(fs.readFileSync(path.join(REPO, 'js/research-graph.js'), 'utf8'));
 eval(fs.readFileSync(path.join(REPO, 'js/research-evidence.js'), 'utf8'));
 eval(fs.readFileSync(path.join(REPO, 'js/research-strategist.js'), 'utf8'));
+eval(fs.readFileSync(path.join(REPO, 'js/research-views.js'), 'utf8'));
 
-const G = window.RGraph, E = window.REvidence, S = window.RStrategist;
+const G = window.RGraph, E = window.REvidence, S = window.RStrategist, V = window.RViews;
 
 // role | market | age | worldview | incentive | bias | lived experience | risk
 // | segment | sentiment | intent | objection | category
@@ -116,4 +117,4 @@ function build() {
   return graph;
 }
 
-module.exports = { G, E, S, build, PANEL, SEG_NAMES };
+module.exports = { G, E, S, V, build, PANEL, SEG_NAMES };
