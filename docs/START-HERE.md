@@ -206,7 +206,22 @@ interactive session before it works.
 **Push to `main` = deploy to production.** No staging.
 
 **`migration.sql` is idempotent** — safe to re-run in full, and that is the
-intended way to apply schema changes. There is no migration tool.
+intended way to apply schema changes. There is no migration tool. Audited
+30 Jul 2026: every table is `create table if not exists`, every seed is
+`on conflict do nothing`, the bill sequence is `if not exists` so invoice
+numbers never rewind, and the only data write is the super-admin flag update.
+Nothing truncates or drops a table.
+
+**`migration.sql` is UTF-8 with no BOM, and it contains `₹`.** Windows
+PowerShell 5.1's `Get-Content` defaults to the ANSI codepage for BOM-less
+files, which silently mangles all eight rupee symbols into mojibake. Copy it
+with an explicit encoding, never bare `Get-Content`:
+
+```powershell
+Set-Clipboard -Value ([System.IO.File]::ReadAllText('D:\INDIZILLA\supabase\migration.sql', (New-Object System.Text.UTF8Encoding $false)))
+```
+
+A correct read is 26,900 chars and 8 `₹`; an ANSI read is 26,930 and zero.
 
 ---
 
@@ -243,13 +258,14 @@ Contact (both in the footer; the Get Started button goes to contact).
 
 ## 9. Open items — read this before planning work
 
-**① Research is broken in production.** The three research tables
-(`research_packs`, `research_studies`, `research_credit_ledger`) **do not
-exist in the database** — they return 404, while every core table returns
-200. `supabase/migration.sql` defines them, but it has not been re-run since
-the Research feature was added. **Fix: paste the whole of
-`supabase/migration.sql` into the Supabase SQL Editor and run it.** It's
-idempotent. Until then, buying credits or creating a study will fail.
+**① ~~Research is broken in production.~~ Fixed 30 Jul 2026.** The three
+research tables were missing (404) because `migration.sql` had not been
+re-run since the Research feature was added. The full file has now been run.
+Verified: all three tables return 200; packs seeded correctly; all six
+research RPCs present and rejecting anonymous callers; direct anon writes to
+`research_studies` and `research_credit_ledger` denied at the grant level;
+anon cannot mint a credit pack (RLS). The Research flow has still not been
+exercised by a signed-in user — that's part of ② below.
 
 **② Sign-in has never been confirmed working.** The race-condition fix is
 deployed but no successful end-to-end Google sign-in has been observed. This

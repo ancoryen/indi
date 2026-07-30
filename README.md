@@ -7,11 +7,6 @@ credits, referrals). Static frontend; Supabase for database + auth; Razorpay for
 > architecture, business rules, gotchas and open items in one place. This file is
 > the deeper reference for the data layer and the Research product.
 
-> ⚠️ **The Research tables are missing in production.** `research_packs`,
-> `research_studies` and `research_credit_ledger` return 404 while every core
-> table returns 200 — `supabase/migration.sql` has not been re-run since the
-> Research feature was added. Run step 1 below to fix it.
-
 ## Go-live checklist
 
 ### 1. Database — re-run whenever `migration.sql` changes
