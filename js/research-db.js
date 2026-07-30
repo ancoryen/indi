@@ -18,7 +18,7 @@ window.RDB = (() => {
     { id: 'quick-pulse', name: 'Quick Pulse',  respondents: 50,  credits: 100, time: '10–15 min', desc: 'A fast read on a single decision.' },
     { id: 'pulse-plus',  name: 'Pulse Plus',   respondents: 100, credits: 200, time: '15–25 min', desc: 'More depth and a wider panel.' },
     { id: 'signal-plus', name: 'Signal Plus',  respondents: 200, credits: 400, time: '25–40 min', desc: 'High-confidence read across segments.' },
-    { id: 'prism',       name: 'Prism',        respondents: 400, credits: 900, time: '40–60 min', desc: 'Advanced, high-volume research.', gated: true }
+    { id: 'prism',       name: 'Prism',        respondents: 400, credits: 900, time: '40–60 min', desc: 'Advanced, high-volume research.' }
   ];
   const FOLLOWUP_COST = 2;
   const modeById = (id) => MODES.find(m => m.id === id) || MODES[0];
