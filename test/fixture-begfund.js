@@ -83,10 +83,31 @@ function build() {
   byCat('regulatory').forEach(o => { b.link(o, a2, 'threatens', true); b.link(o, a3, 'threatens', true); });
   b.link(cFact, a2, 'threatens', true);           // factual blocker: unresolvable by panel
 
+  // Branches must be MEASURED. Each persona states a preference, and those
+  // utterances are the evidential chain the validator now requires — a verdict
+  // assigned without them is rejected, which is the whole point of the
+  // invariant. The anti-institutional personas (engineer, content strategist,
+  // student) pick direct; everyone else picks the NGO route.
   const brDirect = b.branch('Direct-to-beneficiary', 'no',
-    'Panel puts the legal and safeguarding load entirely on you');
+    '3 of 12 preferred this option (25%), mean intent 3.7/5.');
   const brNGO = b.branch('NGO-partnership first', 'conditional',
-    'Solves KYC, 80G and safeguarding; caps growth');
+    '9 of 12 preferred this option (75%), mean intent 3.2/5.');
+  const DIRECT_VOTERS = [2, 7, 11];
+  const personaNodes = b.nodes.filter(n => n.type === 'persona');
+  personaNodes.forEach((pn, i) => {
+    const direct = DIRECT_VOTERS.indexOf(i) !== -1;
+    const target = direct ? brDirect : brNGO;
+    const intent = direct ? 4 : (i % 3 === 0 ? 4 : 3);
+    const bu = b.utterance({
+      text: 'I would go with ' + target.label + '.',
+      sentiment: intent >= 4 ? 'positive' : 'neutral',
+      intent,
+      about: 'branch'            // kept out of the idea-level statistics
+    });
+    b.link(pn, bu, 'voiced_by', true);
+    b.link(bu, pn, 'voiced_by', true);
+    b.link(bu, target, 'supports', true);
+  });
   b.link(brDirect, a2, 'depends_on', false);
   b.link(brNGO, a3, 'depends_on', false);
 

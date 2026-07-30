@@ -20,9 +20,17 @@ window.REvidence = (() => {
   const mean = (a) => (a.length ? sum(a) / a.length : 0);
   const r1   = (n) => Math.round(n * 10) / 10;
 
+  // Branch-preference responses are evidence for the branch, not for how the
+  // idea landed. Keeping them out of the headline statistics stops a fork from
+  // silently doubling the apparent panel size.
+  const isIdea = (u) => u.about !== 'branch';
+  const ideaUtterances = (g) => G.of(g, 'utterance').filter(isIdea);
+  const utteranceFor = (g, personaId) =>
+    G.targets(g, personaId, 'voiced_by').filter(isIdea)[0] || null;
+
   /* ---- 1. panel stats: the raw distribution ---- */
   function panelStats(g) {
-    const us = G.of(g, 'utterance');
+    const us = ideaUtterances(g);
     const n = us.length;
     const count = (s) => us.filter(u => u.sentiment === s).length;
     const pos = count('positive'), neu = count('neutral'), skp = count('skeptical');
@@ -70,9 +78,7 @@ window.REvidence = (() => {
   function segments(g) {
     return G.of(g, 'segment').map(seg => {
       const personas = G.sources(g, seg.id, 'in_segment');
-      const us = personas
-        .map(p => G.targets(g, p.id, 'voiced_by')[0] || null)
-        .filter(Boolean);
+      const us = personas.map(p => utteranceFor(g, p.id)).filter(Boolean);
       const n = us.length;
       const pos = us.filter(u => u.sentiment === 'positive').length;
       const positivePct = n ? Math.round(pos / n * 100) : 0;
@@ -95,7 +101,7 @@ window.REvidence = (() => {
   function polarisation(g) {
     const segs = G.of(g, 'segment').map(seg => {
       const us = G.sources(g, seg.id, 'in_segment')
-        .map(p => G.targets(g, p.id, 'voiced_by')[0] || null).filter(Boolean);
+        .map(p => utteranceFor(g, p.id)).filter(Boolean);
       return us.map(u => u.intent);
     }).filter(a => a.length);
 
@@ -371,10 +377,28 @@ window.REvidence = (() => {
       leverage: leverage(g),
       confidence: confidence(g),
       experiments: experiments(g),
-      branches: G.of(g, 'branch').map(b => ({
-        id: b.id, label: b.label, verdict: b.verdict, why: b.why,
-        restsOn: G.targets(g, b.id, 'depends_on').map(a => a.text)
-      })),
+      // A branch reports what was MEASURED. `evaluated` is false when no
+      // persona assessed it, and an unevaluated branch carries no verdict, no
+      // share and no margin — there is nowhere in the shape to put one.
+      branches: G.of(g, 'branch').map(b => {
+        const votes = G.sources(g, b.id, 'supports').filter(u => u.type === 'utterance');
+        const evaluated = votes.length > 0 && b.verdict != null;
+        const panelN = panelStats(g).n || 1;
+        return {
+          id: b.id, label: b.label,
+          evaluated,
+          verdict: evaluated ? b.verdict : null,
+          why: evaluated ? b.why : 'Not evaluated by this panel.',
+          n: votes.length,
+          preferenceShare: evaluated ? Math.round(votes.length / panelN * 100) : null,
+          meanIntent: evaluated && votes.length
+            ? r1(mean(votes.map(u => u.intent))) : null,
+          marginOfError: evaluated ? propCI(votes.length, panelN) : null,
+          restsOn: G.targets(g, b.id, 'depends_on').map(a => a.text)
+        };
+      }),
+      branchesEvaluated: G.of(g, 'branch')
+        .every(b => G.sources(g, b.id, 'supports').length > 0 && b.verdict != null),
       // Claims split by warrant, so views can never render a factual claim
       // with a confidence figure attached to it.
       claims: G.of(g, 'claim').reduce((acc, c) => {

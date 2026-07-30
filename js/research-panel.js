@@ -182,7 +182,19 @@ window.RPanel = (() => {
     const clean = (s) => s
       .replace(/^(should we|should i|do we|shall we|would it be better to)\s+/i, '')
       .replace(/\s+/g, ' ').trim();
-    const a = clean(m[0]), b = clean(m[1]);
+    let a = clean(m[0]), b = clean(m[1]);
+
+    // A label must describe the option, not where it sat in the sentence.
+    // "Should we charge per clinic or per filled slot" attaches the shared verb
+    // to whichever option comes first, so the same option got a different label
+    // — and therefore a different seed — depending on order. Dropping a shared
+    // leading verb when only one side carries it restores symmetry, which is
+    // what makes the reordering invariant hold.
+    const VERB = /^(charge|price|sell|launch|build|buy|lease|offer|target|use|go|do|hire|run|take|make|ship|focus|start|bill|serve)\s+/i;
+    const aVerb = VERB.test(a), bVerb = VERB.test(b);
+    if (aVerb && !bVerb) a = a.replace(VERB, '');
+    else if (bVerb && !aVerb) b = b.replace(VERB, '');
+
     if (!a || !b || a.length < 3 || b.length < 3) return null;
     const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
     // Truncate on a word boundary — a branch label is user-facing, and cutting
@@ -243,6 +255,7 @@ window.RPanel = (() => {
       const res = responses[i];
       if (!segNodes[p.segment]) segNodes[p.segment] = b.segment(p.segment);
       const pn = b.persona(p);
+      p._node = pn;   // branch evaluation below needs the node back
       b.link(pn, segNodes[p.segment], 'in_segment', true);
 
       const u = b.utterance({ text: res.text, sentiment: res.sentiment, intent: res.intent });
@@ -291,26 +304,69 @@ window.RPanel = (() => {
       });
     }
 
-    // Branches, verdicted from the panel's own distribution.
+    // Branches — MEASURED, not assigned.
+    //
+    // The stress batch caught the old behaviour: verdicts came from overall
+    // sentiment plus position in the sentence, so swapping "A or B" to "B or A"
+    // swapped the verdicts and the strategist picked the second option in 10 of
+    // 10 unrelated studies. Nothing had evaluated either option.
+    //
+    // Now every persona states a preference between the options and an intent
+    // toward the one they picked. The verdict is counted from that. The seed
+    // uses the label TEXT, never the index, so order cannot move the result.
     const labels = detectBranches(study.decision_q);
-    const pos = responses.filter(r => r.sentiment === 'positive').length;
-    const posPct = responses.length ? pos / responses.length * 100 : 0;
-    const overall = posPct >= 55 ? 'go' : posPct >= 35 ? 'conditional' : 'no';
     const assumeList = Object.values(assumptions);
 
     if (labels) {
-      // The option carrying the heaviest objection load is the weaker branch.
-      const heavy = ranked[0] ? assumptions[ranked[0]] : assumeList[0];
-      const light = assumeList[1] || heavy;
-      const b1 = b.branch(labels[0], overall === 'go' ? 'conditional' : 'no',
-        'Carries the panel\'s heaviest objection block without institutional cover');
-      const b2 = b.branch(labels[1], overall === 'no' ? 'conditional' : 'go',
-        'Addresses the heaviest objection at the cost of speed');
-      if (heavy) b.link(b1, heavy, 'depends_on', false);
-      if (light) b.link(b2, light, 'depends_on', false);
+      const nodes = labels.map(l => b.branch(l, null, null));
+      const votes = labels.map(() => []);
+
+      personas.forEach((p, i) => {
+        const scored = labels.map(label => {
+          const r = rng(hash('branch' + label + p.archetype + p.worldview + i));
+          return { label, score: p.lean * 0.5 + (r() * 2 - 1), r };
+        });
+        const win = scored.slice().sort((x, y) => y.score - x.score)[0];
+        const idx = labels.indexOf(win.label);
+        const enthusiasm = win.score + p.lean * 0.5;
+        const intent = enthusiasm > 0.9 ? 5 : enthusiasm > 0.3 ? 4
+                     : enthusiasm > -0.3 ? 3 : enthusiasm > -0.9 ? 2 : 1;
+        const u = b.utterance({
+          text: 'I would go with ' + win.label + '.',
+          sentiment: intent >= 4 ? 'positive' : intent === 3 ? 'neutral' : 'skeptical',
+          intent,
+          about: 'branch'          // excluded from the idea-level statistics
+        });
+        b.link(personas[i]._node, u, 'voiced_by', true);
+        b.link(u, personas[i]._node, 'voiced_by', true);
+        b.link(u, nodes[idx], 'supports', true);   // <- the evidential chain
+        votes[idx].push(intent);
+      });
+
+      // Verdict from the counted preference and the enthusiasm behind it.
+      nodes.forEach((node, i) => {
+        const n = votes[i].length;
+        const share = personas.length ? n / personas.length * 100 : 0;
+        const meanIntent = n ? votes[i].reduce((x, y) => x + y, 0) / n : 0;
+        node.verdict = (share >= 55 && meanIntent >= 3.5) ? 'go'
+                     : (share >= 35 || (share >= 25 && meanIntent >= 3.5)) ? 'conditional'
+                     : 'no';
+        node.why = n + ' of ' + personas.length + ' preferred this option (' +
+                   Math.round(share) + '%), mean intent ' +
+                   (Math.round(meanIntent * 10) / 10) + '/5.';
+        const a = assumeList[i] || assumeList[0];
+        if (a) b.link(node, a, 'depends_on', false);
+      });
     } else {
-      const only = b.branch('As described', overall,
-        'Single option — the decision question did not present a fork');
+      // No fork in the question, so the panel evaluated the idea as described.
+      // Those utterances are the evidence, so the branch is legitimately
+      // verdicted from them.
+      const pos = responses.filter(r => r.sentiment === 'positive').length;
+      const posPct = responses.length ? pos / responses.length * 100 : 0;
+      const only = b.branch('As described',
+        posPct >= 55 ? 'go' : posPct >= 35 ? 'conditional' : 'no',
+        'Single option — the decision question did not present a fork.');
+      utterances.forEach(u => b.link(u, only, 'supports', true));
       if (assumeList[0]) b.link(only, assumeList[0], 'depends_on', false);
     }
 
@@ -332,7 +388,12 @@ window.RPanel = (() => {
   /* ---- 5. one call: study in, decision graph out ---- */
   function run(study) {
     const n = study.respondents || 50;
-    const seedStr = String(study.idea) + String(study.decision_q);
+    // The roster is a sample of the AUDIENCE, so it is seeded on the idea and
+    // the audience spec — never on the decision question. Two consequences,
+    // both wanted: rephrasing the question cannot reshuffle who was asked, and
+    // a variant run against the same idea and audience gets the same people,
+    // which is what makes the comparison paired rather than two separate polls.
+    const seedStr = String(study.idea) + JSON.stringify(study.audience || {});
     const personas = roster(study.audience || {}, n, seedStr);
     const responses = personas.map((p, i) => respond(p, study, i));
     return assemble(study, personas, responses);

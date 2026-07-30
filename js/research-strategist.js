@@ -132,8 +132,17 @@ window.RStrategist = (() => {
     }
     (rec.because || []).forEach((r, i) => walk('recommendation.because[' + i + ']', r));
     (rec.against || []).forEach((r, i) => walk('recommendation.against[' + i + ']', r));
-    if (rec.branch && !(ev.branches || []).some(b => b.label === rec.branch)) {
-      errors.push('recommends branch "' + rec.branch + '" which is not in the evidence');
+    if (rec.branch) {
+      const named = (ev.branches || []).find(b => b.label === rec.branch);
+      if (!named) {
+        errors.push('recommends branch "' + rec.branch + '" which is not in the evidence');
+      } else if (named.evaluated === false) {
+        // The invariant the stress batch forced. Recommending an option no
+        // persona assessed is the fabrication this layer exists to prevent,
+        // whatever the reasoning around it sounds like.
+        errors.push('recommends branch "' + rec.branch + '" which no persona evaluated — ' +
+                    'a recommendation requires a measured branch, not a plausible one');
+      }
     }
 
     (s.moves || []).forEach((m, i) => {
@@ -167,12 +176,18 @@ window.RStrategist = (() => {
   function fromRules(graph, ev) {
     const lev = ev.leverage || [];
     const top = lev[0] || null;
-    const branches = ev.branches || [];
+    // Only measured branches are candidates. An option nobody assessed cannot
+    // be recommended, ranked, or given confidence — it can only be reported as
+    // unevaluated, with the study that would settle it.
+    const branches = (ev.branches || []).filter(b => b.evaluated);
+    const unevaluated = (ev.branches || []).filter(b => !b.evaluated);
     const ranked = ['go', 'conditional', 'no'];
-    const best = branches.slice().sort((a, b) =>
-      ranked.indexOf(a.verdict) - ranked.indexOf(b.verdict))[0] || null;
-    const worst = branches.slice().sort((a, b) =>
-      ranked.indexOf(b.verdict) - ranked.indexOf(a.verdict))[0] || null;
+    // Ties break on measured preference share, never on position in the list.
+    const byVerdict = (x, y) =>
+      (ranked.indexOf(x.verdict) - ranked.indexOf(y.verdict)) ||
+      ((y.preferenceShare || 0) - (x.preferenceShare || 0));
+    const best = branches.slice().sort(byVerdict)[0] || null;
+    const worst = branches.slice().sort((a, b) => byVerdict(b, a))[0] || null;
 
     const strongestSeg = (ev.segments || [])[0] || null;
     const weakestSeg = (ev.segments || []).slice(-1)[0] || null;
@@ -198,19 +213,36 @@ window.RStrategist = (() => {
     };
 
     const position = {
-      text: best && worst && best.label !== worst.label
-        ? 'I would pursue ' + best.label + ' and shelve ' + worst.label + ' for now. ' +
-          (top ? 'The decision turns on one assumption: ' + top.assumption + '.' : '')
-        : 'The panel does not separate the options cleanly enough to pick one yet.',
-      cites: [best ? branchId(best.label) : idOf('branch')]
-        .concat(worst && best && worst.label !== best.label ? [branchId(worst.label)] : [])
-        .concat(top ? [top.assumptionId] : [])
+      text: !branches.length
+        ? 'I cannot recommend between these options: no persona in this panel was asked ' +
+          'to choose between them. ' +
+          (unevaluated.length
+            ? 'The options on the table (' + unevaluated.map(b => b.label).join('; ') + ') ' +
+              'were never put to anyone. ' : '') +
+          'Run a variant on this panel with the options stated, and the comparison becomes ' +
+          'measurable rather than assumed.'
+        : (best && worst && best.label !== worst.label
+            ? 'I would pursue ' + best.label + ' and shelve ' + worst.label + ' for now. ' +
+              best.why + ' ' +
+              (top ? 'The decision turns on one assumption: ' + top.assumption + '.' : '')
+            : best
+              ? best.label + ' is the only option this panel assessed. ' + best.why
+              : 'The panel does not separate the options cleanly enough to pick one yet.'),
+      cites: (branches.length
+        ? [best ? branchId(best.label) : idOf('branch')]
+            .concat(worst && best && worst.label !== best.label ? [branchId(worst.label)] : [])
+            .concat(top ? [top.assumptionId] : [])
+        : (unevaluated.length ? unevaluated.map(b => branchId(b.label)) : [idOf('branch')]))
     };
 
     const because = [];
     if (best) {
-      because.push({ text: best.label + ' is the only branch the panel does not reject outright: ' +
-                           best.why + '.', cites: [branchId(best.label)] });
+      because.push({ text: best.label + ' is the option this panel preferred: ' + best.why,
+                     cites: [branchId(best.label)] });
+    } else if (unevaluated.length) {
+      because.push({ text: 'Nothing here favours one option over another, because the panel ' +
+                           'reacted to the idea rather than to a choice between the options.',
+                     cites: unevaluated.map(b => branchId(b.label)) });
     }
     if (ev.polarisation && ev.polarisation.splits && strongestSeg && weakestSeg) {
       because.push({
@@ -252,9 +284,17 @@ window.RStrategist = (() => {
     }
 
     const moves = [];
-    if (worst && worst.verdict === 'no') {
-      moves.push({ kind: 'kill', rank: 1, text: 'Drop ' + worst.label + ' from the launch scope.',
+    if (worst && worst.verdict === 'no' && worst.label !== (best || {}).label) {
+      moves.push({ kind: 'kill', rank: 1,
+                   text: 'Drop ' + worst.label + ' from the launch scope. ' + worst.why,
                    cites: [branchId(worst.label)] });
+    }
+    if (!branches.length && unevaluated.length) {
+      // The only honest first move when the fork was never put to anyone.
+      moves.push({ kind: 'validate', rank: 1,
+                   text: 'Re-run this panel with the options stated, so the choice between ' +
+                         unevaluated.map(b => b.label).join(' and ') + ' is measured rather than assumed.',
+                   cites: unevaluated.map(b => branchId(b.label)) });
     }
     if (top) {
       moves.push({
@@ -298,6 +338,12 @@ window.RStrategist = (() => {
         needsExternal: true,
         cites: [a.id]
       }));
+    unevaluated.forEach(b => unknowns.push({
+      text: ' + b.label +  was never put to the panel, so nothing here says whether it is ' +
+            'better or worse than the alternative.',
+      needsExternal: false,
+      cites: [branchId(b.label)]
+    }));
     if (ev.confidence.raise && ev.confidence.raise.moreCreditsHelp === false) {
       unknowns.push({
         text: 'A larger panel will not raise confidence on the above. ' + ev.confidence.raise.action,
@@ -311,7 +357,7 @@ window.RStrategist = (() => {
       producedBy: 'rules',
       position,
       recommendation: {
-        branch: best ? best.label : null,
+        branch: best ? best.label : null,   // null when no option was assessed
         // Inherited, never chosen. The verifier enforces this.
         confidence: ev.confidence.level,
         because,
