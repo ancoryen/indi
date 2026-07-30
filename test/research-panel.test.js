@@ -192,3 +192,46 @@ chk('the tier ladder buys real precision', mQuick / mPrism > 2, (mQuick / mPrism
 hr('SUMMARY');
 console.log('passed: ' + pass + '   FAILED: ' + fail);
 fails.forEach(f => console.log('  x ' + f));
+
+/* ------------------------------------------------- regression: mass sanity */
+hr('MASS SANITY  (a share can never exceed 100%)');
+[50, 200, 400].forEach(n => {
+  const g = P.run(Object.assign({}, STUDY, { respondents: n }));
+  const e = E.evidence(g);
+  const worst = Math.max.apply(null, e.assumptions.map(a => a.threatenedMass).concat([0]));
+  const objTotal = e.objections.reduce((s, o) => s + o.pct, 0);
+  const dupes = {};
+  let dupCount = 0;
+  g.edges.forEach(x => { const k = x.from + x.to + x.rel; if (dupes[k]) dupCount++; else dupes[k] = 1; });
+  console.log('  n=' + String(n).padEnd(5) + 'edges=' + String(g.edges.length).padEnd(7) +
+    'dup edges=' + String(dupCount).padEnd(6) + 'max assumption mass=' + worst + '%' +
+    '  objection total=' + objTotal + '%');
+  chk('n=' + n + ': no duplicate edges', dupCount === 0, String(dupCount));
+  chk('n=' + n + ': assumption mass <= 100%', worst <= 100, worst + '%');
+  chk('n=' + n + ': objection shares total exactly 100%', objTotal === 100, objTotal + '%');
+  chk('n=' + n + ': leverage ceiling <= 100%',
+    e.leverage.every(l => l.addressableMass <= 100),
+    String(Math.max.apply(null, e.leverage.map(l => l.addressableMass))));
+});
+
+hr('FINAL');
+console.log('passed: ' + pass + '   FAILED: ' + fail);
+fails.forEach(f => console.log('  x ' + f));
+
+/* ------------------------------------- regression: every respondent counted */
+hr('ROSTER INTEGRITY  (segment counts must reconcile with n)');
+[50, 200, 400].forEach(n => {
+  const g = P.run(Object.assign({}, STUDY, { respondents: n }));
+  const e = E.evidence(g);
+  const personaNodes = G.of(g, 'persona').length;
+  const segTotal = e.segments.reduce((s, x) => s + x.n, 0);
+  console.log('  requested=' + String(n).padEnd(5) + 'persona nodes=' + String(personaNodes).padEnd(6) +
+    'utterances=' + String(e.stats.n).padEnd(6) + 'sum of segment n=' + segTotal);
+  chk('n=' + n + ': one persona node per respondent', personaNodes === n, String(personaNodes));
+  chk('n=' + n + ': segment counts sum to n', segTotal === n, segTotal + ' vs ' + n);
+  chk('n=' + n + ': utterances equal n', e.stats.n === n, String(e.stats.n));
+});
+
+hr('DONE');
+console.log('passed: ' + pass + '   FAILED: ' + fail);
+fails.forEach(f => console.log('  x ' + f));

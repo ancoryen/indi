@@ -77,6 +77,17 @@
       <div><strong>Reading this memo:</strong> a simulated panel is a starting point, not the final word. Confirm the strongest signal with a small real-world test before you commit.</div>
     </footer>`;
 
+  /* ---- v2 decision sections ----
+     Studies carrying a decision graph get the sections a flat memo could not
+     express: confidence that explains itself, a ranked objection table, what
+     the decision rests on, unverified claims held apart, and the moves.
+     Pre-v2 studies simply skip this and keep the memo above. */
+  try {
+    if (window.RDecision) RDecision.mount('decision-sections', study);
+  } catch (e) {
+    if (window.console) console.warn('[report] decision sections failed:', e);
+  }
+
   /* ---- Response breakdown ---- */
   const mix = personas.mix || { positive: 0, neutral: 0, skeptical: 0 };
   const total = (mix.positive + mix.neutral + mix.skeptical) || 1;

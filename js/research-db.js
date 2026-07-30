@@ -168,16 +168,75 @@ window.RDB = (() => {
    * Credits are deducted by createStudy() on the server; generation is the mock
    * engine; saveResult() persists the output. Swap the engine block for an Edge
    * Function call to make generation server-side.                              */
+  // The decision graph rides inside the existing `memo` jsonb column under
+  // engineVersion 2, so v2 ships without a schema migration. v1 top-level
+  // fields are mirrored alongside it, which keeps anything reading the old
+  // shape working while the report learns to render the graph.
+  function v2Result(study, survey) {
+    if (!(window.RPanel && window.REvidence && window.RStrategist)) return null;
+
+    const graph = window.RPanel.run(Object.assign({}, study, { survey }));
+    const ev = window.REvidence.evidence(graph);
+    const strat = window.RStrategist.strategise(graph, ev);
+
+    const rec = (ev.branches || []).find(b => b.label === strat.recommendation.branch)
+             || (ev.branches || [])[0] || {};
+    const topSeg = (ev.segments || [])[0] || null;
+    const topObj = (ev.objections || [])[0] || null;
+    const topExp = (ev.experiments || [])[0] || null;
+    const cap = (s) => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+
+    return {
+      memo: {
+        engineVersion: 2,
+        graph,
+        // ---- v1 mirror: legacy readers keep working ----
+        verdict: rec.verdict || 'conditional',
+        headline: strat.position.text,
+        confidence: cap(ev.confidence.level),
+        stats: [
+          { value: ev.stats.positive.pct + '%', label: 'reacted positively' },
+          { value: ev.stats.meanIntent + '/5', label: 'mean intent to try' },
+          { value: ev.stats.skeptical.pct + '%', label: 'were hard skeptics' }
+        ],
+        segment: topSeg ? { name: topSeg.name, pct: topSeg.positivePct } : null,
+        objection: topObj ? (topObj.examples || topObj.objections || [])[0] || topObj.category : '',
+        nextTest: topExp ? topExp.text : '',
+        generatedAt: new Date().toISOString()
+      },
+      personas: {
+        count: ev.stats.n,
+        mix: {
+          positive: ev.stats.positive.count,
+          neutral: ev.stats.neutral.count,
+          skeptical: ev.stats.skeptical.count
+        },
+        avgScore: ev.stats.meanIntent,
+        shown: window.RGraph.of(graph, 'utterance').slice(0, 12).map(u => {
+          const p = window.RGraph.sources(graph, u.id, 'voiced_by')[0] || {};
+          return {
+            name: (p.role || 'Respondent'),
+            role: p.role || '', sentiment: u.sentiment, score: u.intent, quote: u.text
+          };
+        })
+      }
+    };
+  }
+
   async function runStudy(input, presetSurvey) {
     const study = await back.createStudy(input);          // server deducts credits
     const survey = (presetSurvey && presetSurvey.length)
       ? presetSurvey
       : E.generateSurvey(study.idea, study.decision_q, study.audience);
+
+    const v2 = v2Result(study, survey);
+    if (v2) return await back.saveResult(study.id, survey, v2.personas, v2.memo);
+
+    // v1 fallback: the graph modules were not loaded on this page.
     const panel = E.simulatePanel(Object.assign({}, study, { survey }));
     const memo = E.synthesizeMemo(study, panel);
     const personas = { count: panel.n, mix: { positive: panel.pos, neutral: panel.neu, skeptical: panel.skp }, avgScore: panel.avgScore, shown: panel.shown };
-    const saved = await back.saveResult(study.id, survey, personas, memo);
-    return saved;
+    return await back.saveResult(study.id, survey, personas, memo);
   }
 
   async function askFollowup(study, question) {

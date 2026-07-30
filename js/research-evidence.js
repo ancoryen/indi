@@ -157,7 +157,11 @@ window.REvidence = (() => {
   // respondent, which ranks nothing.
   function objectionClusters(g) {
     const detail = objectionMass(g);
-    const denomPct = detail.length ? detail[0].pct / Math.max(detail[0].count, 1) : 0;
+    const objectors = new Set();
+    G.of(g, 'objection').forEach(o => {
+      G.sources(g, o.id, 'supports').forEach(u => objectors.add(u.id));
+    });
+    const denom = objectors.size || panelStats(g).n || 1;
     const groups = {};
     detail.forEach(o => {
       const c = (groups[o.category] = groups[o.category] ||
@@ -167,7 +171,20 @@ window.REvidence = (() => {
       c.evidence = c.evidence.concat(o.evidence);
       if (o.concentratedIn) c.segs[o.concentratedIn] = (c.segs[o.concentratedIn] || 0) + o.count;
     });
-    return Object.values(groups).map(c => {
+    // Largest-remainder rounding, so the shares a user reads add up. Rounding
+    // each category independently made seven categories total 104%, which reads
+    // as a broken table even though every individual figure was correct.
+    const list = Object.values(groups);
+    const exact = list.map(c => c.count / denom * 100);
+    const target = Math.round(exact.reduce((a, b) => a + b, 0));
+    const floors = exact.map(Math.floor);
+    let left = target - floors.reduce((a, b) => a + b, 0);
+    const order = exact.map((e, i) => ({ i, frac: e - Math.floor(e) }))
+      .sort((a, b) => b.frac - a.frac);
+    const pcts = floors.slice();
+    for (let k = 0; k < order.length && left > 0; k++, left--) pcts[order[k].i]++;
+
+    return list.map((c, ci) => {
       // Recompute concentration across the whole cluster, not per objection.
       const segTally = {};
       G.of(g, 'objection').filter(o => o.category === c.category).forEach(o => {
@@ -181,7 +198,7 @@ window.REvidence = (() => {
       return {
         category: c.category,
         count: c.count,
-        pct: Math.round(c.count * denomPct),
+        pct: pcts[ci],
         distinctObjections: c.objections.length,
         objections: c.objections,
         evidence: c.evidence.slice(0, 3),
@@ -197,8 +214,14 @@ window.REvidence = (() => {
     objectionMass(g).forEach(o => { masses[o.id] = o.pct; });
 
     return G.of(g, 'assumption').map(a => {
-      const attackers = G.sources(g, a.id, 'threatens').filter(n => n.type === 'objection');
-      const threatenedMass = sum(attackers.map(o => masses[o.id] || 0));
+      // Dedupe by node id before summing. The graph now enforces unique edges,
+      // but a mass that can exceed 100% is a silent lie in a user-facing figure,
+      // so this stays as a second line of defence.
+      const seen = {};
+      const attackers = G.sources(g, a.id, 'threatens')
+        .filter(n => n.type === 'objection')
+        .filter(n => (seen[n.id] ? false : (seen[n.id] = true)));
+      const threatenedMass = Math.min(sum(attackers.map(o => masses[o.id] || 0)), 100);
       const dependents = G.sources(g, a.id, 'depends_on');
       const verdictDependent = dependents.some(n => n.type === 'branch');
       // Explainable on purpose: mass carried, doubled when a branch verdict
