@@ -1,7 +1,8 @@
 # Shipping Research v2 — live inference
 
-Everything that does not need your credentials is written and tested. This is
-the short list of things only you can do, in order. Budget about 20 minutes.
+Everything that can be automated is automated. Deployment is one command; the
+only thing that cannot be scripted is issuing two credentials, because both
+require a logged-in browser session on an account that is yours.
 
 Written 30 Jul 2026.
 
@@ -32,89 +33,32 @@ and `graph.meta.engine` records whether it was `live` or `mock`.
 
 ---
 
-## 1. Run the migration  (~2 min)
+## Deploy
 
-`supabase/migration.sql` has three additions at the bottom. Copy it with the
-correct encoding — it is UTF-8 without a BOM and contains `₹`:
-
-```powershell
-Set-Clipboard -Value ([System.IO.File]::ReadAllText('D:\INDIZILLA\supabase\migration.sql', (New-Object System.Text.UTF8Encoding $false)))
-```
-
-Paste into the [SQL Editor](https://supabase.com/dashboard/project/iykuvppjmmatsvrrtwra/sql)
-and Run. It is idempotent.
-
-What the additions do:
-
-| Function | Why |
-|---|---|
-| `fail_study` | **Refunds credits when a run fails.** Generation now costs real money, so a mid-run failure must not leave the user charged for nothing. |
-| `create_study` | Adds an advisory lock, closing a read-then-write gap where two concurrent runs could both pass the balance check. |
-| `research_credit_balance` | Adds a caller check. It was readable for any profile UUID. |
-
----
-
-## 2. Set the API secret  (~3 min)
-
-Get a key from [console.anthropic.com](https://console.anthropic.com) → API Keys.
+One command. It applies the migration, sets the secret, deploys the function and
+verifies all three:
 
 ```bash
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref iykuvppjmmatsvrrtwra
+SUPABASE_ACCESS_TOKEN=sbp_... ANTHROPIC_API_KEY=sk-ant-... node scripts/ship.mjs
 ```
 
-Or Dashboard → Project Settings → Edge Functions → Secrets → Add.
+Two credentials are needed and neither can be obtained programmatically:
 
-**Set a monthly spend limit on the Anthropic key before you do anything else.**
-A loop in the wrong place is the one failure mode here that costs money rather
-than time.
+- **Supabase access token** — https://supabase.com/dashboard/account/tokens →
+  Generate new token. Issuing it requires a logged-in browser session on the
+  account that owns the project. This one token covers all three deploy steps.
+- **Anthropic API key** — https://console.anthropic.com/settings/keys. It bills
+  your account, so it has to be yours. Set a spend limit while you are there.
+
+Both are read from the environment by the script and are never printed, logged
+or written to disk. Re-running is safe: the migration is idempotent, the secret
+upserts, the function redeploys in place.
+
+If it finishes with errors, the output says which step failed and why.
 
 ---
 
-## 3. Deploy the Edge Function  (~5 min)
-
-```bash
-npx supabase login
-npx supabase functions deploy research --project-ref iykuvppjmmatsvrrtwra
-```
-
-If the CLI is logged in as the wrong account (see START-HERE §7 — this machine
-has two), `npx supabase logout` first.
-
----
-
-## 4. Verify  (~5 min)
-
-Sign in at https://indizilla.com/login.html, then from the browser console on
-any Research page:
-
-```js
-RLive.available()          // true once deployed and signed in
-await RLive.call({ action: 'strategist', request: { rules: [], evidence: {} } })
-```
-
-A `401` means the session is not being passed. A `500` naming
-`ANTHROPIC_API_KEY` means step 2 did not take. Function logs:
-
-```bash
-npx supabase functions logs research --project-ref iykuvppjmmatsvrrtwra
-```
-
-Then run a real study — **start with Quick Pulse** (50 personas, ~₹20) rather
-than Prism, so the first live run is cheap if something is wrong.
-
-Check afterwards, in the console on the report page:
-
-```js
-const s = await RDB.getStudy(new URLSearchParams(location.search).get('id'));
-s.memo.graph.meta          // engine: 'live', personaModel, usage
-```
-
-`engine: 'mock'` with a `liveError` means it fell back — the study still
-completed, and the error says why.
-
----
-
-## 5. What to watch on the first live runs
+## What to watch on the first live runs
 
 | Signal | Where | What it means |
 |---|---|---|
