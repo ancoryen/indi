@@ -69,15 +69,35 @@ chk('uses a boundary-safe method', ev.sampling.method === 'agresti-coull');
 const tiny = E.segments(graph).find(s => s.n === 2);
 chk('0-of-2 segment gets an honest interval', tiny.marginOfError > 25, String(tiny.marginOfError));
 
-hr('SEGMENTS  (hand-check: donors +25, NGO -25, compliance -25)');
+// Two groupings now, and they answer different questions. `archetypeSegments`
+// is the roster as ASSIGNED — an input, kept for provenance and for
+// polarisation, which needs a grouping independent of the responses it
+// measures. `segments` is what the memo reports: groups DISCOVERED from answer
+// similarity, so their names and membership cannot be predicted from the
+// fixture table and are asserted structurally instead.
+hr('ASSIGNED SEGMENTS  (hand-check: donors +25, NGO -25, compliance -25)');
 console.log('segment'.padEnd(42) + 'n'.padEnd(4) + 'pos%'.padEnd(6) + 'vs'.padEnd(6) + 'intent'.padEnd(8) + '+/-pp');
-ev.segments.forEach(s => console.log(s.name.slice(0, 40).padEnd(42) + String(s.n).padEnd(4) +
+ev.archetypeSegments.forEach(s => console.log(s.name.slice(0, 40).padEnd(42) + String(s.n).padEnd(4) +
   (s.positivePct + '%').padEnd(6) + ((s.vsOverall >= 0 ? '+' : '') + s.vsOverall).padEnd(6) +
   String(s.meanIntent).padEnd(8) + s.marginOfError));
-const ngo = ev.segments.find(s => s.id === R.segNGO);
+const ngo = ev.archetypeSegments.find(s => s.id === R.segNGO);
 chk('NGO segment scores BELOW overall', ngo && ngo.vsOverall < 0, ngo ? String(ngo.vsOverall) : 'missing');
 chk('NGO segment is 0% positive', ngo && ngo.positivePct === 0);
-chk('a signed negative delta exists', ev.segments.some(s => s.vsOverall < 0));
+chk('a signed negative delta exists', ev.archetypeSegments.some(s => s.vsOverall < 0));
+
+hr('DISCOVERED SEGMENTS  (from answer similarity, not from the roster)');
+console.log('group'.padEnd(46) + 'n'.padEnd(4) + 'pos%'.padEnd(6) + 'vs'.padEnd(6) + '+/-pp');
+ev.segments.forEach(s => console.log(s.name.slice(0, 44).padEnd(46) + String(s.n).padEnd(4) +
+  (s.positivePct + '%').padEnd(6) + ((s.vsOverall >= 0 ? '+' : '') + s.vsOverall).padEnd(6) + s.marginOfError));
+console.log('method: ' + ev.clustering.method + '  separation: ' + ev.clustering.separation);
+chk('every respondent lands in exactly one group',
+  ev.segments.reduce((a, s) => a + s.n, 0) === ev.stats.n,
+  ev.segments.reduce((a, s) => a + s.n, 0) + ' vs ' + ev.stats.n);
+chk('discovered names differ from assigned ones',
+  ev.segments.every(s => !ev.archetypeSegments.some(a => a.name === s.name)));
+chk('each group reports what defines it', ev.segments.every(s => !!s.definedBy));
+chk('each group reports who is in it', ev.segments.every(s => (s.archetypeMix || []).length > 0));
+chk('separation is reported, not hidden', typeof ev.clustering.separation === 'number');
 
 hr('POLARISATION  (hand-check: eta-squared ~0.57 -> splits)');
 console.log(JSON.stringify(ev.polarisation, null, 1));
@@ -93,8 +113,25 @@ console.log('total: ' + total + '%');
 chk('shares do not exceed 100%', total <= 100, total + '%');
 chk('safeguarding is the largest block', ev.objections[0].category === 'safeguarding', ev.objections[0].category);
 chk('safeguarding counts 4', ev.objections[0].count === 4, String(ev.objections[0].count));
-chk('safeguarding concentrates in the NGO segment',
-  /NGO/.test(ev.objections[0].concentratedIn || ''), String(ev.objections[0].concentratedIn));
+// The old assertion read `concentratedIn`, which no longer fires here — a
+// group DEFINED by safeguarding being where safeguarding objections live is a
+// tautology, and the engine now suppresses it rather than printing it as a
+// finding. The finding worth testing survives, and is stronger: the group that
+// clustering formed around safeguarding turns out to be the NGO people, which
+// nothing told it. It reached that from the answers alone.
+const safeSeg = ev.segments.find(s => s.topCategory === 'safeguarding');
+const ngoShare = safeSeg
+  ? ((safeSeg.archetypeMix || []).find(a => /NGO/.test(a.value)) || {}).pct || 0 : 0;
+console.log('safeguarding group: "' + (safeSeg ? safeSeg.name : 'none') + '" — composition: ' +
+  (safeSeg ? safeSeg.archetypeMix.map(a => a.value + ' ' + a.pct + '%').join(', ') : 'n/a'));
+chk('clustering finds a safeguarding group without being told to', !!safeSeg);
+chk('that group is mostly NGO people', ngoShare >= 50,
+  (safeSeg ? safeSeg.name : '-') + ' is ' + ngoShare + '% NGO');
+chk('a tautological concentration is not reported as a finding',
+  ev.objections.every(o => {
+    const s = ev.segments.find(x => x.name === o.concentratedIn);
+    return !s || s.topCategory !== o.category;
+  }));
 chk('dignity and safeguarding both present',
   ev.objections.some(o => o.category === 'dignity') && ev.objections.some(o => o.category === 'safeguarding'));
 chk('individual wording preserved under the cluster',

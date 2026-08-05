@@ -137,8 +137,11 @@ chk('variant reuses the panel', convo.operations.variant.reusesPanel === true);
 chk('new panel does not reuse it', convo.operations.panel.reusesPanel === false);
 chk('suggestions are derived from findings, not generic',
   convo.suggestions.some(s => /safeguarding/.test(s.text) || /safeguarding/.test(s.why)));
+// Segment names are now discovered rather than assigned, so the assertion
+// matches against the groups this study actually produced instead of against
+// hardcoded roster labels — which is the point of the change.
 chk('suggestions name a real segment',
-  convo.suggestions.some(s => /NGO & frontline|Individual donors/.test(s.text)));
+  convo.suggestions.some(s => ev.segments.some(seg => s.text.indexOf(seg.name) !== -1)));
 chk('at least one cheap query op', convo.suggestions.some(s => s.op === 'query' && !s.requiresNewRun));
 chk('at least one paired variant op', convo.suggestions.some(s => s.op === 'variant' && s.reusesPanel));
 chk('views declare no prices', !JSON.stringify(convo).match(/credits?["']?\s*:\s*\d/));

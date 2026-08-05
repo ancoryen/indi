@@ -12,8 +12,8 @@ const fs = require('fs');
 const path = require('path');
 const REPO = path.join(__dirname, '..');
 global.window = global;
-['research-graph', 'research-evidence', 'research-strategist', 'research-views',
- 'research-panel', 'research-conversation']
+['research-graph', 'research-clusters', 'research-evidence', 'research-strategist',
+ 'research-views', 'research-panel', 'research-conversation']
   .forEach(f => eval(fs.readFileSync(path.join(REPO, 'js/' + f + '.js'), 'utf8')));
 const G = window.RGraph, E = window.REvidence, P = window.RPanel, C = window.RConvo;
 
@@ -158,8 +158,16 @@ function expectReject(name, mutate, needle) {
   if (caught) console.log('        ' + r.errors.find(e => !needle || e.toLowerCase().includes(needle)));
   chk('rejects: ' + name, caught, r.errors.join(' / '));
 }
+// The figure has to be one this study genuinely does not contain. Hardcoding
+// "63%" broke the moment eta-squared landed at 0.63 — at which point the
+// verifier was right to accept it and the test was asserting a fabrication that
+// was not one. Pick the number from what the evidence demonstrably lacks.
+const quotable = window.RStrategist.quotableNumbers(ev);
+let absent = 63;
+while (quotable.has(absent)) absent++;
 expectReject('fabricated figure in the answer',
-  a => { a.text += ' Fixing it would recover 63% of them.'; }, 'absent from the evidence');
+  a => { a.text += ' Fixing it would recover ' + absent + '% of them.'; },
+  'absent from the evidence');
 expectReject('quote nobody said',
   a => { a.quotes = ['I would buy this instantly, no questions asked.']; }, 'no respondent said');
 expectReject('cites a node that does not exist',

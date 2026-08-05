@@ -83,20 +83,37 @@ security-definer RPCs (in `supabase/migration.sql`): `buy_research_credits`,
 `research_credit_balance`, `admin_adjust_research_credits`. Prices and mode costs
 live server-side — the browser can't invent a free study or a discount.
 
-**The simulation is a mock, on purpose** — `js/research-engine.js` generates the
-study-fit check, audience inference, survey, persona panel and memo entirely
-client-side, seeded from the inputs so a study is deterministic. Credit deduction
-and persistence are already server-authoritative via the RPCs. To go live, swap
-the engine's `generateSurvey` / `simulatePanel` / `synthesizeMemo` /
-`followupAnswer` for a Supabase Edge Function calling an LLM — the return shapes
-are the contract the UI depends on; keep them.
+**The engine is a decision engine, not a report generator** (v2). A study is a
+typed graph, and everything the reader sees is a view rendered from it:
+
+| File | Does |
+|---|---|
+| `js/research-graph.js` | The decision graph, warrant classes, and the validator that enforces them |
+| `js/research-clusters.js` | Segments **discovered** from answer similarity — not the assigned roster |
+| `js/research-evidence.js` | All the arithmetic. Nothing here is generated |
+| `js/research-strategist.js` | Judgement, plus the `verify()` that rejects it if it fabricates |
+| `js/research-views.js` | View models tagged evidence / reasoning / recommendation / unknown |
+| `js/research-conversation.js` | Routes a question to query / variant / panel / external before answering |
+| `js/research-preview.js` | Pre-flight: what you get, before a credit is spent |
+| `js/research-panel.js` | Roster + graph assembly (mock content; live replaces the content only) |
+| `js/research-live.js` | The seam to `supabase/functions/research` |
+
+Three properties are structural rather than promised, and the validators bite:
+a `factual` claim can never carry confidence; a verdict must trace to something
+a persona actually said; and generated judgement that asserts a figure the
+evidence does not contain is discarded in favour of the rules baseline.
+
+`node test/*.test.js` — 456 checks. `test/stress.js` runs ten unrelated ideas
+looking for shared artefacts. See `docs/RESEARCH-ENGINE-V2.md`.
 
 **Credit model** — packs: Starter ₹399/450cr, Growth ₹899/1050cr, Pro
 ₹1,499/1,900cr. Study modes: Quick Pulse 50 personas/100cr, Pulse Plus 100/200,
-Signal Plus 200/400, Prism 400/900. A follow-up question costs 2 credits. Credits
-never expire. Credit purchases don't yet generate a `bill` (the order trigger
-would spawn a meaningless job) — the research ledger is the record; wiring an
-invoice for purchases is a future enhancement.
+Signal Plus 200/400, Prism 400/900. **Asking a question about a finished study
+is free** — it is a read over data already paid for; credits are spent when
+computation runs (a variant re-run, or a new panel). Credits never expire.
+Credit purchases don't yet generate a `bill` (the order trigger would spawn a
+meaningless job) — the research ledger is the record; wiring an invoice for
+purchases is a future enhancement.
 
 > Re-running `supabase/migration.sql` (step 1 above) also creates all Research
 > tables, RPCs and RLS — it's one idempotent file.

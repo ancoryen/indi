@@ -1529,11 +1529,40 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   .rd-packs { grid-template-columns: 1fr; }
 }
 
+/* -------------------------------------------------------------- Pre-flight
+   Shown on the launch step. Everything in it is computed without spending a
+   credit, and the copy says so — a preview that reads like a partial result
+   would be worse than no preview. */
+.preflight { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--line);
+  border-radius: var(--r-md); background: var(--surface-alt); }
+.pf-head { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-muted); margin-bottom: 10px; }
+.pf-row { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: start;
+  padding: 8px 0; border-top: 1px solid var(--line-soft); font-size: 14px; }
+.pf-row:first-of-type { border-top: 0; padding-top: 0; }
+.pf-k { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--text-muted); padding-top: 2px; }
+.pf-v { line-height: 1.45; }
+.pf-note { display: block; font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.pf-upgrade .pf-v { color: var(--accent-ink); }
+.pf-upgrade.is-marginal .pf-v { color: var(--text-soft); }
+.pf-foot { font-size: 12px; color: var(--text-muted); margin: 10px 0 0;
+  padding-top: 10px; border-top: 1px solid var(--line-soft); }
+@media (max-width: 720px) {
+  .pf-row { grid-template-columns: 1fr; gap: 2px; }
+}
+
 /* ============================================================ Decision sections
    v2 report: the graph-derived sections. Styled by epistemic `kind` so a reader
    can tell a measurement from a judgement without reading the label. */
 .decision-sections { display: grid; gap: 18px; margin-top: 18px; }
-.d-sec { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px 22px; background: var(--surface-raised); }
+/* min-width:0 is load-bearing. A grid item defaults to min-width:auto, so it
+   refuses to shrink below its content — the segment table then stretched the
+   whole section past the viewport instead of scrolling inside its own
+   .table-wrap, and the page scrolled sideways on mobile. */
+.d-sec { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px 22px;
+  background: var(--surface-raised); min-width: 0; }
+.d-sec .table-wrap { overflow-x: auto; }
 .d-sec .dh { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .d-sec .dh h3 { font-family: var(--font-disp); font-size: 18px; margin: 0; }
 .kind-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
@@ -1596,8 +1625,26 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 .thin-flag { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 6px; }
 
 .d-objs { display: grid; gap: 14px; }
-.do-top { display: grid; grid-template-columns: 120px 1fr 96px; align-items: center; gap: 10px; }
+.do-top { display: grid; grid-template-columns: 74px 108px 1fr 96px; align-items: center; gap: 10px; }
 .do-cat { font-weight: 600; text-transform: capitalize; font-size: 14px; }
+/* Severity is a separate axis from mass. The table is sorted by priority, so
+   the tier badge has to be the first thing read on each row — otherwise the
+   bar length still dominates and the ordering looks arbitrary. */
+.do-sev { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  padding: 3px 6px; border-radius: var(--r-sm); text-align: center; cursor: help; }
+.sev-critical .do-sev { color: #fff; background: var(--v-no); }
+/* --v-no inverts to a light red in dark mode, where white-on-it lands around
+   1.9:1. The badge keeps its solid fill — that emphasis is the point — and
+   flips to ink for the text instead. */
+[data-theme="dark"] .sev-critical .do-sev { color: var(--ink); }
+.sev-high .do-sev { color: var(--v-no); background: var(--v-no-bg); }
+.sev-medium .do-sev { color: var(--v-cond); background: var(--v-cond-bg); }
+/* --text-muted lands at 2.95:1 on this fill. Fine for incidental prose, thin
+   for a badge the eye is meant to land on, so the low tier takes the softer
+   ink instead — it still recedes against critical's solid fill. */
+.sev-low .do-sev { color: var(--text-soft); background: var(--surface-alt); }
+.d-obj.is-underweighted { padding-left: 10px; border-left: 3px solid var(--v-no); }
+.do-under { font-size: 12px; color: var(--v-no); font-weight: 600; margin-top: 5px; }
 .do-bar { height: 10px; background: var(--mist); border-radius: 999px; overflow: hidden; }
 .do-bar i { display: block; height: 100%; background: var(--v-no); }
 .do-pct { text-align: right; font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -1640,6 +1687,72 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 .de-meas { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); }
 .d-prov { font-size: 12px; color: var(--text-muted); text-align: center; margin: 4px 0 0; }
 
+/* ---- segments: discovered, not assigned ----
+   The method line sits above the table because these groups are a FINDING.
+   When separation is weak the same line says so — four confident boxes drawn
+   around noise is the failure this layer exists to prevent. */
+.d-segmethod { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.dsm-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--v-go); border: 1px solid var(--v-go); border-radius: 999px; padding: 2px 8px; flex-shrink: 0; }
+.dsm-note { font-size: 12px; color: var(--text-muted); }
+.d-segmethod.is-weak .dsm-tag { color: var(--v-cond); border-color: var(--v-cond); }
+.d-segmethod.is-weak .dsm-note { color: var(--v-cond); }
+.d-table td.dseg { display: table-cell; max-width: 300px; }
+.dseg-name { display: block; font-weight: 600; }
+.dseg-def { display: block; font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+.dseg-mix { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dseg-pref small { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ---- flip conditions ---- */
+.d-flips { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.d-flip { border-left: 3px solid var(--v-cond); background: var(--surface-alt);
+  padding: 12px 14px; border-radius: 0 var(--r-md) var(--r-md) 0; }
+.d-flip.f-segment { border-left-color: var(--v-go); }
+.d-flip.is-conditional { border-left-style: dashed; border-left-color: var(--text-muted); }
+.df-tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-soft); margin-bottom: 5px; }
+.d-flip p { margin: 0; font-size: 14px; line-height: 1.5; }
+.df-fix { margin-top: 5px !important; font-size: 12px !important; color: var(--text-muted); }
+
+/* ---- what they use today ---- */
+.d-subs { display: grid; gap: 12px; margin-bottom: 12px; }
+.dsu-top { display: grid; grid-template-columns: 190px 1fr 54px; align-items: center; gap: 10px; }
+.dsu-lab { font-size: 14px; font-weight: 600; }
+.dsu-paid { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--accent-ink); border: 1px solid var(--accent-ink); border-radius: 999px;
+  padding: 0 5px; margin-left: 6px; }
+.dsu-bar { height: 10px; background: var(--mist); border-radius: 999px; overflow: hidden; }
+.dsu-bar i { display: block; height: 100%; background: var(--charcoal); }
+[data-theme="dark"] .dsu-bar i { background: var(--text-soft); }
+.dsu-pct { text-align: right; font-size: 14px; font-variant-numeric: tabular-nums; }
+.dsu-switch { font-size: 12px; color: var(--text-soft); margin-top: 3px; }
+.dsu-switch small { color: var(--text-muted); }
+.d-subnote { font-size: 14px; line-height: 1.5; margin: 0; padding: 12px 14px;
+  border-left: 3px solid var(--accent); background: var(--accent-tint); border-radius: 0 var(--r-md) var(--r-md) 0; }
+
+/* ---- positioning concepts ----
+   Every card carries an "untested" badge. These framings were never put to the
+   panel, and a messaging section that reads as validated is the quietest lie a
+   research tool can print — so the badge is not optional styling. */
+.d-concepts { display: grid; gap: 12px; }
+.d-concept { border: 1px dashed var(--line); border-radius: var(--r-md); padding: 14px; background: var(--surface-alt); }
+.dcn-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.dcn-role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.d-concept.c-lead .dcn-role { color: var(--v-go); }
+.d-concept.c-defensive .dcn-role { color: var(--v-no); }
+.d-concept.c-wedge .dcn-role { color: var(--v-cond); }
+.dcn-untested { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; }
+.dcn-aud { margin: 0 0 6px; font-size: 13px; color: var(--text-soft); }
+.dcn-promise { margin: 0 0 6px; font-size: 15px; line-height: 1.5; }
+.dcn-why { margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+
+/* ---- moves, grouped by horizon ---- */
+.d-horizon + .d-horizon { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.d-horizon .dh-label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-muted); margin-bottom: 8px; }
+.d-horizon.h-now .dh-label { color: var(--accent-ink); }
+
 @media (max-width: 720px) {
   .d-sec { padding: 16px; }
   .dd-row { grid-template-columns: 1fr; gap: 4px; }
@@ -1648,6 +1761,9 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   .do-pct { text-align: left; }
   .dm { grid-template-columns: 1fr; gap: 4px; }
   .dm-kind { justify-self: start; }
+  .dsu-top { grid-template-columns: 1fr; gap: 4px; }
+  .dsu-pct { text-align: left; }
+  .d-table td.dseg { max-width: none; }
 }
 
 /* ------------------------------------------------------------ Conversation

@@ -102,9 +102,23 @@ const RESPONSE_SCHEMA = {
                        'effort', 'regulatory', 'dignity', 'safeguarding', 'other'] },
           text: { type: 'string' },
           branch: { type: 'string' },
-          branchIntent: { type: 'integer', enum: [1, 2, 3, 4, 5] }
+          branchIntent: { type: 'integer', enum: [1, 2, 3, 4, 5] },
+          // What this person does about the problem today, and how willing they
+          // are to stop. `kind` drives stickiness in the evidence engine, which
+          // is why it is a closed enum rather than free text.
+          substitute: {
+            type: 'object',
+            properties: {
+              kind: { type: 'string',
+                      enum: ['nothing', 'manual', 'service', 'incumbent', 'inhouse'] },
+              text: { type: 'string' },
+              switchIntent: { type: 'integer', enum: [1, 2, 3, 4, 5] }
+            },
+            required: ['kind', 'text', 'switchIntent'],
+            additionalProperties: false
+          }
         },
-        required: ['index', 'sentiment', 'intent', 'category', 'text'],
+        required: ['index', 'sentiment', 'intent', 'category', 'text', 'substitute'],
         additionalProperties: false
       }
     }
@@ -128,7 +142,13 @@ Rules:
 - sentiment must be consistent with intent: 4-5 positive, 3 neutral, 1-2 skeptical.
 - If branch options are given, pick the one that person would actually choose and rate how
   strongly (branchIntent). Judge the option on its merits for that person — not by the order
-  it was listed in.`;
+  it was listed in.
+- Every person must report what they do about this problem TODAY (substitute), in their own
+  words, plus which kind it is and how willing they are to switch away from it (switchIntent).
+  "nothing" is a real and common answer — do not inflate it into a tool they do not use.
+  switchIntent is willingness to leave what they have, which is not the same as liking the
+  idea: someone maintaining an in-house system rates lower than someone using nothing, even
+  when both are enthusiastic.`;
 
 function personaPrompt(study: any, people: any[], branches: string[] | null) {
   const roster = people.map((p, i) =>
@@ -187,7 +207,12 @@ async function generatePanel(study: any, people: any[], branches: string[] | nul
   const byIndex = new Map(flat.map((r) => [r.index, r]));
   const responses = people.map((p, i) => byIndex.get(i) ?? {
     index: i, sentiment: 'neutral', intent: 3, category: 'other',
-    text: 'No clear reaction recorded.', missing: true
+    text: 'No clear reaction recorded.',
+    // A filler carries no substitute. Inventing one would put a fabricated row
+    // into the competitive section, which is precisely what the graph's
+    // evidential floor exists to stop — better a smaller denominator there
+    // than a made-up answer.
+    missing: true
   });
   return { responses, usage, model: PERSONA_MODEL };
 }

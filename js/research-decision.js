@@ -95,28 +95,97 @@ window.RDecision = (() => {
         '/5 · margin ±' + b.marginOfError + 'pp</div></div>';
     }
     if (b.type === 'segments') {
-      return '<div class="table-wrap"><table class="d-table"><thead><tr>' +
-        '<th>Segment</th><th>n</th><th>Positive</th><th>vs overall</th><th>±pp</th>' +
+      return '<div class="d-segmethod' + (b.weak ? ' is-weak' : '') + '">' +
+        '<span class="dsm-tag">Discovered from answers</span>' +
+        '<span class="dsm-note">' + esc(b.methodNote || '') + '</span></div>' +
+        '<div class="table-wrap"><table class="d-table"><thead><tr>' +
+        '<th>Group</th><th>n</th><th>Positive</th><th>vs overall</th><th>±pp</th><th>Prefers</th>' +
         '</tr></thead><tbody>' + b.segments.map(s =>
-          '<tr' + (s.below ? ' class="is-below"' : '') + '><td>' + esc(s.name) +
+          '<tr' + (s.below ? ' class="is-below"' : '') + '><td class="dseg">' +
+          '<span class="dseg-name">' + esc(s.name) +
           (s.thin ? ' <span class="thin-flag" title="Too few responses to read alone">thin</span>' : '') +
+          '</span>' +
+          (s.definedBy ? '<span class="dseg-def">' + esc(s.definedBy) + '</span>' : '') +
+          ((s.composition || []).length
+            ? '<span class="dseg-mix">' + s.composition.map(c =>
+                esc(c.value) + ' ' + c.pct + '%').join(' · ') + '</span>'
+            : '') +
           '</td><td>' + s.n + '</td><td>' + s.positivePct + '%</td>' +
           '<td class="' + (s.below ? 'neg' : 'pos') + '">' +
           (s.vsOverall >= 0 ? '+' : '') + s.vsOverall + '</td>' +
-          '<td>±' + s.marginOfError + '</td></tr>'
+          '<td>±' + s.marginOfError + '</td>' +
+          '<td class="dseg-pref">' + (s.prefers
+            ? esc(s.prefers.label) + ' <small>' + s.prefers.pct + '%</small>' : '—') + '</td></tr>'
         ).join('') + '</tbody></table></div>';
     }
     return '';
   }
 
+  function renderFlips(blocks) {
+    return '<ul class="d-flips">' + blocks.map(b =>
+      '<li class="d-flip f-' + b.flipType + (b.measured ? '' : ' is-conditional') + '">' +
+      '<span class="df-tag">' + (b.measured ? 'Measured' : 'Conditional') + '</span>' +
+      '<p>' + esc(b.text) + '</p>' +
+      (b.fixedBy ? '<p class="df-fix">Resolved by ' + esc(b.fixedBy) + '.</p>' : '') +
+      '</li>').join('') + '</ul>';
+  }
+
+  function renderSubstitutes(b) {
+    return '<p class="d-note">' + esc(b.scopeNote) + '</p>' +
+      '<div class="d-subs">' + b.rows.map(r =>
+        '<div class="d-sub"><div class="dsu-top">' +
+        '<span class="dsu-lab">' + esc(r.label) +
+        (r.monetised ? '<span class="dsu-paid" title="They already pay for this">paying</span>' : '') +
+        '</span>' +
+        '<span class="dsu-bar"><i style="width:' + r.pct + '%"></i></span>' +
+        '<span class="dsu-pct">' + r.pct + '%</span></div>' +
+        '<div class="dsu-switch">' + r.wouldSwitchPct + '% would switch ' +
+        '<small>(n=' + r.count + (r.marginOfError != null ? ', ±' + r.marginOfError + 'pp' : '') + ')</small>' +
+        '</div></div>').join('') + '</div>' +
+      '<p class="d-subnote">' + esc(b.note) + '</p>';
+  }
+
+  function renderMessaging(b) {
+    // The disclaimer renders first and is never collapsible. These framings
+    // were not tested and the page must not let that fact scroll away.
+    return '<p class="d-disclaim">' + esc(b.disclaimer) + '</p>' +
+      '<div class="d-concepts">' + b.concepts.map(c =>
+        '<div class="d-concept c-' + c.role + '">' +
+        '<div class="dcn-head"><span class="dcn-role">' + esc(c.roleLabel || c.role) + '</span>' +
+        '<span class="dcn-untested">untested</span></div>' +
+        '<p class="dcn-aud">For <strong>' + esc(c.audience) + '</strong>' +
+        // Which objection this answers. Without it the defensive concept reads
+        // as a non-sequitur: it targets the group an objection concentrates in,
+        // which is often not the group named after that objection.
+        (c.answers ? ' · answers <strong>' + esc(c.answers) + '</strong>' : '') + '</p>' +
+        '<p class="dcn-promise">' + esc(c.promise) + '</p>' +
+        '<p class="dcn-why">' + esc(c.why) + '</p>' +
+        '</div>').join('') + '</div>';
+  }
+
   function renderObjections(b) {
     const max = Math.max.apply(null, b.rows.map(r => r.pct).concat([1]));
-    return '<div class="d-objs">' + b.rows.map(r =>
-      '<div class="d-obj"><div class="do-top">' +
+    // Sorted by priority, not by mass. A critical objection at 6% has to appear
+    // above an execution detail at 40%, which is the entire reason severity
+    // exists as a separate dimension.
+    const rows = b.rows.slice().sort((x, y) =>
+      (x.priorityRank || 99) - (y.priorityRank || 99));
+    return '<p class="d-note">' + esc(b.severityNote || '') + '</p>' +
+      '<div class="d-objs">' + rows.map(r =>
+      '<div class="d-obj sev-' + r.severity + (r.underweighted ? ' is-underweighted' : '') + '">' +
+      '<div class="do-top">' +
+      '<span class="do-sev" title="' + esc(r.severityWhy || '') + '">' + esc(r.severity) + '</span>' +
       '<span class="do-cat">' + esc(r.category) + '</span>' +
       '<span class="do-bar"><i style="width:' + Math.round(r.pct / max * 100) + '%"></i></span>' +
       '<span class="do-pct">' + r.pct + '% <small>(' + r.count + ')</small></span></div>' +
-      (r.concentratedIn ? '<div class="do-conc">Concentrated in ' + esc(r.concentratedIn) + '</div>' : '') +
+      (r.underweighted
+        ? '<div class="do-under">Raised by few — and not something to defer. ' +
+          esc(r.severityWhy || '') + '</div>' : '') +
+      (r.concentratedIn
+        ? '<div class="do-conc">Concentrated in ' + esc(r.concentratedIn) + ' — ' +
+          r.concentration + '% of these came from that group, ' + r.concentrationLift +
+          '× its share of the panel</div>'
+        : '') +
       '<ul class="do-quotes">' + (r.examples || []).map(q =>
         '<li>' + esc(q) + '</li>').join('') + '</ul></div>'
     ).join('') + '</div>';
@@ -156,12 +225,21 @@ window.RDecision = (() => {
 
   function renderMoves(b) {
     if (b.type === 'moves') {
-      return '<ol class="d-moves">' + b.moves.map(m =>
-        '<li class="dm m-' + m.kind + '"><span class="dm-kind">' +
-        esc(MOVE_LABEL[m.kind] || m.kind) + '</span><span class="dm-text">' + esc(m.text) +
-        (m.addressableMass != null
-          ? ' <span class="dm-ceil">ceiling ' + m.addressableMass + '%, not a forecast</span>' : '') +
-        '</span></li>').join('') + '</ol>';
+      // Grouped by horizon so the plan reads as a sequence. Empty horizons are
+      // skipped rather than rendered as an empty heading.
+      const HL = { now: 'This week', '30d': 'Next 30 days', '90d': 'Next 90 days' };
+      return (b.horizons || ['now', '30d', '90d']).map(h => {
+        const inTier = b.moves.filter(m => (m.horizon || '30d') === h);
+        if (!inTier.length) return '';
+        return '<div class="d-horizon h-' + h + '">' +
+          '<div class="dh-label">' + esc(HL[h] || h) + '</div>' +
+          '<ol class="d-moves">' + inTier.map(m =>
+            '<li class="dm m-' + m.kind + '"><span class="dm-kind">' +
+            esc(MOVE_LABEL[m.kind] || m.kind) + '</span><span class="dm-text">' + esc(m.text) +
+            (m.addressableMass != null
+              ? ' <span class="dm-ceil">ceiling ' + m.addressableMass + '%, not a forecast</span>' : '') +
+            '</span></li>').join('') + '</ol></div>';
+      }).join('');
     }
     if (b.type === 'one-week') {
       return '<div class="d-week"><div class="dw-label">If you only have one week</div>' +
@@ -193,9 +271,11 @@ window.RDecision = (() => {
       case 'confidence':  return renderConfidence(b);
       case 'panel':       return renderPanel(b);
       case 'objections':  return renderObjections(b);
+      case 'substitutes': return renderSubstitutes(b);
       case 'leverage':    return renderLeverage(b);
       case 'reasoning':   return renderReasoning(b);
       case 'unknown':     return renderUnknown(b);
+      case 'messaging':   return renderMessaging(b);
       case 'moves':       return renderMoves(b);
       case 'experiments': return renderExperiments(b);
       default:            return '';
@@ -210,7 +290,10 @@ window.RDecision = (() => {
     if (!container || !model) return false;
     const html = model.sections.filter(s => SKIP.indexOf(s.id) === -1).map(s =>
       '<section class="d-sec d-' + s.id + ' kind-' + s.kind + '">' + sectionHead(s) +
-      s.blocks.map(b => renderBlock(s, b, model)).join('') + '</section>'
+      // Flip conditions read as one list; everything else renders block by block.
+      (s.id === 'flips'
+        ? renderFlips(s.blocks)
+        : s.blocks.map(b => renderBlock(s, b, model)).join('')) + '</section>'
     ).join('');
 
     const prov = model.provenance || {};

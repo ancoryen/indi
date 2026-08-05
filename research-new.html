@@ -177,6 +177,10 @@
               <div class="ls-bal">Balance: <span id="ls-balance">—</span></div>
             </div>
           </div>
+          <!-- Pre-flight. Everything below is computed without spending a
+               credit: the roster is deterministic from the audience settings,
+               and the margin comes from the panel size. -->
+          <div class="preflight" id="preflight" hidden></div>
           <p class="launch-warn" id="launch-warn" hidden></p>
           <button class="btn btn-primary" type="button" id="launch" style="width:100%; margin-top:16px;">Run the study <span class="arrow">↗</span></button>
           <p class="hint" style="text-align:center; margin-top:10px;">Credits are only spent when the study runs. This takes a moment.</p>
@@ -207,11 +211,13 @@
 <script src="js/auth.js"></script>
 <script src="js/research-engine.js"></script>
 <script src="js/research-graph.js"></script>
+<script src="js/research-clusters.js"></script>
 <script src="js/research-evidence.js"></script>
 <script src="js/research-strategist.js"></script>
 <script src="js/research-views.js"></script>
 <script src="js/research-conversation.js"></script>
 <script src="js/research-panel.js"></script>
+<script src="js/research-preview.js"></script>
 <script src="js/research-live.js"></script>
 <script src="js/research-db.js"></script>
 <script src="js/main.js"></script>

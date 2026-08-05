@@ -213,7 +213,7 @@ window.RConvo = (() => {
                 bSeg.marginOfError + 'pp).' +
                 (sep ? ' The objection separating them is ' + sep.category + ', concentrated in ' +
                        sep.concentratedIn + '.' : ''),
-          cites: [a.id, bSeg.id],
+          cites: (a.cites || [a.id]).concat(bSeg.cites || [bSeg.id]),
           quotes: sep ? sep.evidence.slice(0, 2) : [],
           data: { a: a.name, b: bSeg.name }
         };
@@ -230,7 +230,7 @@ window.RConvo = (() => {
           text: s.name + ' was the most receptive at ' + s.positivePct + '% positive (' +
                 (s.vsOverall >= 0 ? '+' : '') + s.vsOverall + ' vs overall), n=' + s.n +
                 ', ±' + s.marginOfError + 'pp.',
-          cites: [s.id],
+          cites: s.cites || [s.id],
           data: { segment: s.name, pct: s.positivePct }
         };
       }
@@ -244,7 +244,7 @@ window.RConvo = (() => {
         return {
           text: s.name + ' was least receptive at ' + s.positivePct + '% positive (' +
                 s.vsOverall + ' vs overall), n=' + s.n + '.',
-          cites: [s.id],
+          cites: s.cites || [s.id],
           data: { segment: s.name, pct: s.positivePct }
         };
       }
@@ -260,7 +260,7 @@ window.RConvo = (() => {
                 (c.raise.moreCreditsHelp
                   ? 'To improve it: ' + c.raise.action
                   : c.raise.action + ' A larger panel will not help.'),
-          cites: (ev.segments[0] ? [ev.segments[0].id] : []),
+          cites: (ev.segments[0] ? (ev.segments[0].cites || [ev.segments[0].id]) : []),
           data: { level: c.level, marginOfError: c.marginOfError, moreCreditsHelp: c.raise.moreCreditsHelp }
         };
       }
@@ -312,7 +312,7 @@ window.RConvo = (() => {
             ? ' The spread runs from ' + top.name + ' at ' + top.positivePct + '% to ' +
               bot.name + ' at ' + bot.positivePct + '%.'
             : ''),
-          cites: [top, bot].filter(Boolean).map(s => s.id),
+          cites: [top, bot].filter(Boolean).reduce((a, s) => a.concat(s.cites || [s.id]), []),
           data: { etaSquared: p.etaSquared, splits: p.splits }
         };
       }
@@ -390,7 +390,7 @@ window.RConvo = (() => {
         text: cls.reason,
         nextStep: 'Run a new panel with that audience. Results will not be directly ' +
                   'comparable to this one, because the people are different.',
-        cites: (ev.segments[0] ? [ev.segments[0].id] : [])
+        cites: (ev.segments[0] ? (ev.segments[0].cites || [ev.segments[0].id]) : [])
       });
     }
 
@@ -428,7 +428,12 @@ window.RConvo = (() => {
     if (a.answeredFromGraph) {
       if (!(a.cites || []).length) errors.push('answered from the graph but cites nothing');
       if (S) {
-        const allowed = S.numbersIn(ev);
+        // The same narrow whitelist the strategist uses, and for the same
+        // reason: scanning the whole bundle let any figure appearing anywhere
+        // pass, so every field added to the evidence widened what an answer
+        // could claim. Both verifiers have to draw from one declared set or
+        // they decay independently and silently.
+        const allowed = S.quotableNumbers(ev);
         const strings = S.stringsIn(ev);
         S.assertedQuantities(a.text, strings).forEach(q => {
           if (!allowed.has(q.value)) {

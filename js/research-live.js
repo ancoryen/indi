@@ -77,6 +77,17 @@ window.RLive = (() => {
         text: r.text || 'No clear reaction recorded.',
         branch: r.branch || null,
         branchIntent: r.branchIntent || null,
+        // Passed through only when the model actually returned one. A missing
+        // substitute stays missing: assemble() then creates no node, the person
+        // is simply absent from the "what they use today" denominator, and the
+        // graph's evidential floor is never asked to accept an invented answer.
+        substitute: (r.substitute && r.substitute.kind && r.substitute.text)
+          ? {
+              kind: r.substitute.kind,
+              text: r.substitute.text,
+              switchIntent: r.substitute.switchIntent || r.intent || 3
+            }
+          : null,
         missing: !!r.missing
       };
     });

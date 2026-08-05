@@ -100,6 +100,28 @@ window.RViews = (() => {
       ]
     });
 
+    /* 2b. what would change the answer */
+    // Placed next to confidence deliberately: "how much to trust this" and
+    // "what would overturn it" are the same question asked twice, and a reader
+    // who has just been given a margin of error is exactly the reader who needs
+    // the flip conditions.
+    if ((ev.flips || []).length) {
+      sections.push({
+        id: 'flips', title: 'What would change this', kind: 'evidence',
+        blocks: (ev.flips || []).map(f => block(f.measured ? 'evidence' : 'reasoning', {
+          type: 'flip',
+          flipType: f.type,
+          text: f.text,
+          measured: f.measured === true,
+          conditional: f.conditional === true,
+          addressableMass: f.addressableMass != null ? f.addressableMass : null,
+          isCeilingNotForecast: f.isCeilingNotForecast === true,
+          segment: f.segment || null,
+          fixedBy: f.fixedBy || null
+        }))
+      });
+    }
+
     /* 3. what the panel actually said */
     const statBlocks = [
       block('evidence', {
@@ -124,12 +146,26 @@ window.RViews = (() => {
     }
     statBlocks.push(block('evidence', {
       type: 'segments',
+      // These groups are DISCOVERED from answer similarity, not assigned when
+      // the roster was built. The method and its separation score travel with
+      // the table, because a weakly separated grouping presented as four
+      // confident boxes is the failure mode this whole layer exists to avoid.
+      method: (ev.clustering || {}).method || null,
+      separation: (ev.clustering || {}).separation,
+      weak: (ev.clustering || {}).weak === true,
+      methodNote: (ev.clustering || {}).note || null,
       // Signed deltas, and a segment may sit below the overall rate.
       segments: ev.segments.map(s => ({
         name: s.name, n: s.n, positivePct: s.positivePct,
         vsOverall: s.vsOverall, below: s.vsOverall < 0,
         meanIntent: s.meanIntent, marginOfError: s.marginOfError,
-        thin: s.n < 20
+        thin: s.n < 20,
+        // What defines the group, and who turned out to be in it.
+        definedBy: s.definedBy || null,
+        composition: (s.archetypeMix || []).slice(0, 3),
+        roles: (s.roleMix || []).slice(0, 2),
+        prefers: s.branchPreference
+          ? { label: s.branchPreference.value, pct: s.branchPreference.pct } : null
       }))
     }));
     sections.push({ id: 'panel', title: 'What the panel said', kind: 'evidence', blocks: statBlocks });
@@ -139,15 +175,60 @@ window.RViews = (() => {
       id: 'objections', title: 'Why they objected', kind: 'evidence',
       blocks: [block('evidence', {
         type: 'objection-table',
+        // Two orderings, offered as a choice rather than merged. Mass answers
+        // "what did they talk about"; priority answers "what do I deal with
+        // first". They are different questions and one column cannot serve both.
+        severityNote: 'Severity is our assessment of what each kind of objection costs ' +
+                      'to be wrong about — not something the panel voted on. Share and ' +
+                      'count are measured.',
         rows: ev.objections.map(o => ({
           category: o.category, count: o.count, pct: o.pct,
           distinctObjections: o.distinctObjections,
           concentratedIn: o.concentratedIn,
+          // Both figures travel with the name. "Concentrated in X" without the
+          // lift is the claim the reader cannot check, and the renderer was
+          // printing "undefined%" without them.
+          concentration: o.concentration,
+          concentrationLift: o.concentrationLift,
           examples: o.objections.slice(0, 3),
-          evidence: o.evidence
+          evidence: o.evidence,
+          severity: o.severity,
+          severityBasis: o.severityBasis,
+          severityWhy: o.severityWhy,
+          massRank: o.massRank,
+          priorityRank: o.priorityRank,
+          // Rare but expensive: the row a popularity-sorted table buries.
+          underweighted: o.pct < 10 && ['critical', 'high'].indexOf(o.severity) !== -1
         }))
       })]
     });
+
+    /* 4b. what they use today */
+    const subs = ev.substitutes || {};
+    if ((subs.byKind || []).length) {
+      sections.push({
+        id: 'substitutes', title: 'What they use today', kind: 'evidence',
+        blocks: [block('evidence', {
+          type: 'substitutes',
+          n: subs.n, coverage: subs.coverage,
+          monetisedPct: subs.monetisedPct,
+          note: subs.note,
+          // The panel cannot name your competitors — it has no market data —
+          // so this is what these respondents said they do instead. Saying so
+          // is the difference between a finding and a competitive-landscape
+          // section that quietly makes itself up.
+          scopeNote: 'What these respondents said they do today. A panel cannot tell you ' +
+                     'who your competitors are — only what this audience would be switching from.',
+          rows: (subs.byKind || []).map(k => ({
+            label: k.label, kind: k.kind, pct: k.pct, count: k.count,
+            monetised: k.monetised,
+            wouldSwitchPct: k.wouldSwitchPct,
+            marginOfError: k.marginOfError
+          })),
+          named: (subs.named || []).slice(0, 6)
+        })]
+      });
+    }
 
     /* 5. what the decision rests on */
     sections.push({
@@ -196,14 +277,39 @@ window.RViews = (() => {
       });
     }
 
+    /* 7b. positioning to test — hypotheses, never findings */
+    if (strat.messaging && (strat.messaging.concepts || []).length) {
+      sections.push({
+        id: 'messaging', title: 'Positioning to test', kind: 'recommendation',
+        blocks: [block('recommendation', {
+          type: 'messaging',
+          // Carried through to the page. The panel never saw any of these
+          // framings, and a messaging section that reads as validated is the
+          // quietest lie a research tool can print.
+          disclaimer: strat.messaging.disclaimer,
+          concepts: strat.messaging.concepts.map(c => ({
+            role: c.role, roleLabel: c.roleLabel,
+            audience: c.audience, promise: c.promise,
+            answers: c.answers, why: c.why,
+            tested: c.tested === true, cites: c.cites
+          }))
+        })]
+      });
+    }
+
     /* 8. what to do */
     sections.push({
       id: 'moves', title: 'What we would do', kind: 'recommendation',
       blocks: [
         block('recommendation', {
           type: 'moves',
+          // Grouped by horizon, so the plan reads as a sequence rather than a
+          // list. The tier is derived from whether a move blocks the decision.
+          horizons: ['now', '30d', '90d'],
           moves: strat.moves.map(m => ({
             kind: m.kind, rank: m.rank, text: m.text, cites: m.cites,
+            horizon: m.horizon || '30d',
+            horizonLabel: m.horizonLabel || null,
             addressableMass: m.addressableMass != null ? m.addressableMass : null,
             isCeilingNotForecast: m.isCeilingNotForecast === true
           }))
@@ -392,13 +498,50 @@ window.RViews = (() => {
         });
       }
 
-      // Any quoted mass must be labelled a ceiling.
+      // Any quoted mass must be labelled a ceiling — including on the block
+      // itself, which is where a flip condition carries one.
       const rows = (b.rows || []).concat(b.moves || []);
       rows.forEach((r, j) => {
         if (r.addressableMass != null && r.isCeilingNotForecast !== true) {
           errors.push(at + '.rows[' + j + '] quotes addressableMass without marking it a ceiling');
         }
       });
+      if (b.addressableMass != null && b.isCeilingNotForecast !== true) {
+        errors.push(at + ' quotes addressableMass without marking it a ceiling');
+      }
+
+      // Severity is an assigned prior. A row that carries a tier without
+      // declaring where it came from reads as something the panel measured.
+      (b.rows || []).forEach((r, j) => {
+        if (r.severity != null && r.severityBasis !== 'assigned') {
+          errors.push(at + '.rows[' + j + '] carries severity "' + r.severity +
+                      '" without severityBasis:"assigned" — the panel did not vote on severity');
+        }
+      });
+
+      // Positioning concepts were never put to the panel.
+      if (b.type === 'messaging') {
+        if (!b.disclaimer) {
+          errors.push(at + ' is a messaging block with no disclaimer — untested framings ' +
+                      'must not read as findings');
+        }
+        (b.concepts || []).forEach((c, j) => {
+          if (c.tested !== false) {
+            errors.push(at + '.concepts[' + j + '] does not declare tested:false');
+          }
+          ['pct', 'lift', 'marginOfError', 'confidence'].forEach(f => {
+            if (f in c && c[f] != null) {
+              errors.push(at + '.concepts[' + j + '] carries "' + f + '" — a framing the ' +
+                          'panel never saw cannot carry a measurement');
+            }
+          });
+        });
+      }
+
+      // A flip condition that is not measured must say so.
+      if (b.type === 'flip' && b.measured !== true && b.conditional !== true) {
+        errors.push(at + ' is an unmeasured flip condition not marked conditional');
+      }
 
       // A recommendation must be traceable.
       if (b.kind === 'recommendation' && b.type === 'position' && !(b.cites || []).length) {

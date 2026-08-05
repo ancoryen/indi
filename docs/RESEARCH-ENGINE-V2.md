@@ -488,3 +488,136 @@ What it produced that the mock structurally cannot:
 
 Both schema changes above came out of this run, which is the argument for doing
 phase 1 as a measurement exercise rather than a build.
+
+---
+
+## 11. Competitive pass (6 Aug 2026)
+
+A comparison against a similar tool surfaced five things it did better and two
+we should not copy. Everything below is built and covered by `test/research-clusters.test.js`.
+
+### 11.1 Segments are discovered, not assigned
+
+The change that mattered. Segments used to *be* the six roster archetypes, so
+every study ever run reported the same six groups with the same names — the
+stress batch found "Early adopters" strongest in 10 of 10 unrelated ideas,
+which is a result about our roster code, not about any market. Crucially this
+would **not** have fixed itself under live inference: generation varies what
+personas say, never which bucket they were assigned to.
+
+Attributes are still assigned for generation — that is what makes a panel
+computable — but groups now come out of `js/research-clusters.js` by k-means
+over answer similarity, then get described by what their members turn out to
+share. "The people blocked on compliance are 65% economic buyers and 35%
+gatekeepers" is a sentence the archetype model could never produce, because it
+had already decided the answer.
+
+Seeding is farthest-first over a stable point order, so it is deterministic —
+segments that reshuffled between reads would make the memo disagree with itself.
+Mean silhouette travels with the table and the copy says so when separation is
+weak: four confident boxes drawn around noise is the failure this layer exists
+to prevent.
+
+Result across ten unrelated ideas: **1 distinct segment set → 10**, and the
+dominant-segment artefact fell from 10/10 to 4/10.
+
+Two circularity traps, both real, both guarded by tests:
+
+- **Branch preference is not a clustering feature.** At weight 0.9 it split the
+  panel along the fork, and the memo then announced "this group prefers B" as a
+  discovery about a group *defined by* preferring B.
+- **Polarisation stays on the assigned grouping.** Clusters are built partly
+  from intent, so measuring how much intent variance they explain would report
+  a high split on every study by construction — including panels that agree.
+
+### 11.2 Severity is a separate axis from mass
+
+Ranking objections by how often they were raised conflates two things. A
+safeguarding objection at 5% can end the company; an effort objection at 30% is
+a sprint of work. `OBJECTION_SEVERITY` assigns a tier per category by what it
+costs to be wrong about, and the table sorts by priority while still reporting
+mass. It is an **assigned prior** — `severityBasis: 'assigned'` is enforced by
+the view audit, because the panel did not vote on it.
+
+It binds on behaviour, not just presentation: a rare-but-severe objection can no
+longer be set aside for being rare, and is promoted into the case against.
+
+A first version also escalated a tier when the objection threatened a
+verdict-bearing assumption. It fired on three of seven categories, because
+`assemble` attaches branches to assumptions by index — so it was reading graph
+bookkeeping, not meaning. A tier most things reach is not a tier. Dropped.
+
+### 11.3 Concentration is a lift, not a head count
+
+"Concentrated in X" has to mean more than "X is the biggest group". The plain
+majority test named a cluster holding 55% of the panel, which was simply where
+most of everything was. It is now the group's share of that objection against
+its share of the panel, reported with the multiple, and suppressed entirely when
+the group is *defined* by that objection — a tautology is not a finding.
+
+### 11.4 Substitutes: what they use today
+
+A panel cannot name your competitors; it has no market data. It can report what
+these people do instead, which is the competitive question that bears on the
+decision. Substitute kind drives stickiness, so switch intent is discounted by
+how entrenched the incumbent is — without which the section just restates intent
+under a new heading, and the respondents most willing to switch (those paying
+for nothing) look like the best prospects.
+
+Substitutes carry the same evidential floor as verdicts: one the engine invented
+rather than heard is rejected by the graph validator.
+
+### 11.5 Flip conditions
+
+Three tests, all computed — not a self-assigned confidence penalty but the
+specific circumstances under which the recommendation reverses. The segment flip
+is the strongest of them: it turns "who is your real market" from a
+philosophical question into an arithmetic one.
+
+A segment flip must clear its **own** interval. Without that a 25-person cluster
+split 52/48 was reported as "the answer reverses here" — a flip condition that is
+itself noise is worse than none. For a two-option fork the margin test is against
+an even split, not a doubled interval: summing both margins treats a paired
+comparison as two separate polls and would call a genuine 60/40 a tie.
+
+### 11.6 Positioning concepts, and the pre-flight
+
+Three concepts (lead / defensive / wedge), each tied to something measured. Every
+one is marked `tested: false` and carries a disclaimer — the panel reacted to the
+idea, never to a framing of it. Both the strategist verifier and the view audit
+reject a concept that claims otherwise or carries any measurement. A messaging
+section that reads as validated is the quietest lie a research tool can print.
+
+`js/research-preview.js` shows, before a credit is spent: how the decision
+question was parsed, the exact roster that will be generated, and the precision
+the chosen size buys — expressed as the narrowest two-way split it can call
+(±4.9pp resolves a 10-point split; ±13.3pp resolves 27). It will say when the
+bigger tier is not worth the credits, which is the same principle as the
+confidence layer refusing an upsell that would not help.
+
+### 11.7 What we deliberately did not copy
+
+- **A self-assigned confidence delta.** A model critiquing itself and emitting
+  "−12 confidence" is inventing a number about its own reliability; it would
+  fail our own verifier. Ours derives uncertainty from the data. Theirs is more
+  *legible*, and that is a real commercial cost of this choice.
+- **Metering follow-up questions.** A query is a read over data already paid
+  for. Charging for it is the quiet upsell the confidence layer refuses.
+
+Still open: reserve-then-reconcile credit metering (today: deduct up front,
+refund via `fail_study`), and share/present modes.
+
+### 11.8 The verifier decayed while nobody was looking
+
+Worth recording as the general lesson. `verify()` allowed any figure that
+appeared *anywhere* in the evidence bundle. That held while the bundle was
+small. Adding response segments put every `categoryMix` and `branchMix`
+percentage into scope, and a fabricated "+40%" promptly found its match in one
+cluster's third-ranked objection share. The verifier had stopped verifying and
+nothing about it looked broken.
+
+What may be quoted is now a declared whitelist (`quotableNumbers`), shared by
+the strategist and the conversation engine — both drew from the same widening
+set and would otherwise have decayed independently and silently. A new headline
+figure has to be added deliberately; a new internal field cannot widen the set
+by accident.

@@ -128,8 +128,12 @@ js/cart.js             à-la-carte cart, clubbing premium, package upsell
 js/dashboard.js        client dashboard (orders, bills, credits, referrals)
 js/admin.js            admin console (users, jobs, bills, coupons, credits)
 js/bills.js            invoice rendering/printing
-js/research-*.js       the Research product (db, engine, wizard, report, admin)
+js/research-*.js       the Research product — graph, clusters, evidence,
+                       strategist, views, conversation, preview, db, wizard
+supabase/functions/    the research Edge Function (live inference)
 supabase/migration.sql the entire database — idempotent, safe to re-run
+scripts/ship.mjs       one-command deploy (migration + secret + function)
+test/*.test.js         456 checks; test/stress.js is a diagnostic, not a test
 ```
 
 ### The data layer is the thing to understand first
@@ -284,12 +288,23 @@ key id only; there is no signature verification or webhook, so payment ids in
 the database are unverified references. Real money needs a Supabase Edge
 Function using `RAZORPAY_KEY_SECRET`, plus a switch to `rzp_live_…`.
 
-**⑤ The Research simulation is a deliberate mock.** `js/research-engine.js`
-generates the survey, panel and memo client-side, seeded from inputs so a
-study is deterministic. Credit deduction and persistence are already
-server-authoritative. To go live, swap `generateSurvey` / `simulatePanel` /
-`synthesizeMemo` / `followupAnswer` for an Edge Function calling an LLM —
-**keep the return shapes**, they're the contract the UI depends on.
+**⑤ Research falls back to a mock, and says so.** The live path is
+`supabase/functions/research` (Sonnet 5 for personas, Opus 5 for the
+strategist), reached via `js/research-live.js`. When the key or the function is
+missing it falls back to the seeded mock in `js/research-panel.js` and records
+`graph.meta.engine` as `live` or `mock` — **a silent fallback is the thing to
+catch**, so check that field before trusting a study.
+
+Only the *content* is generated. The roster, the graph assembly, the evidence
+arithmetic and every verifier stay client-side and unchanged, which is why a
+model that fabricates a figure gets discarded rather than published. Deploy with
+`node scripts/ship.mjs` (see `docs/SHIP-V2.md`); the architecture is in
+`docs/RESEARCH-ENGINE-V2.md`.
+
+One thing that trips people: **segments are computed, not stored.** A discovered
+group's id (`rc_1`) is not a graph node, so anything citing it must cite the
+group's `cites` (its member personas) instead — dangling `rc_*` references are a
+bug the verifiers will catch, and did.
 
 **⑥ Market multipliers are estimates.** US 3.5×, UK 3.2×, UAE 2.5× and so
 on in `js/geo.js` were my approximations of relative market rates, never

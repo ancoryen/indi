@@ -14,6 +14,7 @@ const REPO = path.join(__dirname, '..');
 
 global.window = global;
 eval(fs.readFileSync(path.join(REPO, 'js/research-graph.js'), 'utf8'));
+eval(fs.readFileSync(path.join(REPO, 'js/research-clusters.js'), 'utf8'));
 eval(fs.readFileSync(path.join(REPO, 'js/research-evidence.js'), 'utf8'));
 eval(fs.readFileSync(path.join(REPO, 'js/research-strategist.js'), 'utf8'));
 eval(fs.readFileSync(path.join(REPO, 'js/research-views.js'), 'utf8'));

@@ -194,12 +194,59 @@
   $('regen').addEventListener('click', genSurvey);
   $('back-2').addEventListener('click', () => goStep(2));
 
+  /* ---- pre-flight: what you get, before you pay for it ----
+     Three things worth seeing before a credit is spent: how we parsed the
+     decision question (a fork we read wrongly is cheapest to catch now), the
+     panel that will actually be generated, and the precision this size buys.
+     The last one sometimes says the cheaper tier is enough — which is the same
+     principle as the confidence layer refusing to sell credits that will not
+     help. */
+  function renderPreflight(m) {
+    const box = $('preflight');
+    if (!box || !window.RPreview || !state.idea) return;
+    let pf;
+    try {
+      pf = RPreview.preflight({
+        idea: state.idea, decision_q: state.decision,
+        audience: state.audience, respondents: m.respondents
+      }, RDB.MODES.filter(x => !x.gated).map(x => ({ respondents: x.respondents, tier: x.name })));
+    } catch (e) { box.hidden = true; return; }
+    if (!pf || !pf.composition) { box.hidden = true; return; }
+
+    const q = pf.question;
+    const chosen = pf.chosen || {};
+    const mix = pf.composition.archetypes.slice(0, 6);
+
+    box.innerHTML =
+      '<div class="pf-head">Before you spend anything</div>' +
+      '<div class="pf-row"><span class="pf-k">Read as</span><span class="pf-v">' +
+        (q.parsedAs === 'fork'
+          ? 'a choice — ' + q.branches.map(b => '<b>' + esc(b) + '</b>').join(' vs ')
+          : 'a single proposition') +
+        '<span class="pf-note">' + esc(q.note) + '</span></span></div>' +
+      '<div class="pf-row"><span class="pf-k">Panel</span><span class="pf-v">' +
+        mix.map(a => esc(a.value) + ' ' + a.pct + '%').join(' · ') +
+        '<span class="pf-note">Exact — the roster is built from your audience settings, ' +
+        'not sampled at random.</span></span></div>' +
+      '<div class="pf-row"><span class="pf-k">Precision</span><span class="pf-v">±' +
+        chosen.marginOfError + 'pp at 95%<span class="pf-note">' + esc(chosen.reads || '') +
+        '</span></span></div>' +
+      (pf.upgrade
+        ? '<div class="pf-row pf-upgrade' + (pf.upgrade.worthIt ? '' : ' is-marginal') + '">' +
+          '<span class="pf-k">Bigger panel</span><span class="pf-v">' +
+          esc(pf.upgrade.text) + '</span></div>'
+        : '') +
+      '<p class="pf-foot">' + esc(pf.note) + '</p>';
+    box.hidden = false;
+  }
+
   function updateLaunch() {
     const m = RDB.modeById(state.mode);
     $('ls-mode').textContent = m.name;
     $('ls-detail').textContent = m.respondents + ' personas · ' + state.survey.length + ' questions';
     $('ls-credits').textContent = m.credits;
     $('ls-balance').textContent = state.balance + ' credits';
+    renderPreflight(m);
     if (!user) {
       // Signed out: the button becomes the sign-in step, never a dead end.
       $('launch-warn').hidden = false;

@@ -11,8 +11,8 @@ const fs = require('fs');
 const path = require('path');
 const REPO = path.join(__dirname, '..');
 global.window = global;
-['research-graph', 'research-evidence', 'research-strategist', 'research-views',
- 'research-panel', 'research-conversation']
+['research-graph', 'research-clusters', 'research-evidence', 'research-strategist',
+ 'research-views', 'research-panel', 'research-conversation']
   .forEach(f => eval(fs.readFileSync(path.join(REPO, 'js/' + f + '.js'), 'utf8')));
 const G = window.RGraph, E = window.REvidence, S = window.RStrategist,
       V = window.RViews, P = window.RPanel, C = window.RConvo;
@@ -138,7 +138,7 @@ const topTally = {};
 topSegs.forEach(s => { topTally[s] = (topTally[s] || 0) + 1; });
 console.log('\nstrongest segment, by study:');
 Object.entries(topTally).sort((a, b) => b[1] - a[1])
-  .forEach(([s, n]) => console.log('  ' + s.padEnd(32) + n + '/' + runs.length +
+  .forEach(([s, n]) => console.log('  ' + s.padEnd(46) + n + '/' + runs.length +
     (n > runs.length / 2 ? '   <-- dominates' : '')));
 const zeroSegs = runs.map(r => r.ev.segments.filter(s => s.positivePct === 0).length);
 console.log('\nsegments at exactly 0% positive, per study: ' + zeroSegs.join(', ') +

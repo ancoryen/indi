@@ -113,6 +113,27 @@ window.RPanel = (() => {
   // claim, which the graph then forbids from carrying confidence.
   const NEEDS_EXTERNAL = ['regulatory'];
 
+  // What each archetype is plausibly doing today. A panel cannot name your
+  // competitors — it has no market data — but it can report what these people
+  // would be switching FROM, which is the competitive question that actually
+  // bears on the decision. Live inference replaces this text; the shape stays.
+  const SUBSTITUTES = {
+    nothing:  ['Nothing — we live with the problem', 'We absorb the cost of not solving it'],
+    manual:   ['A spreadsheet we maintain by hand', 'A manual process and a lot of chasing'],
+    service:  ['An agency we pay to handle it', 'A consultant we bring in when it matters'],
+    incumbent:['An existing paid tool we already licence', 'The product most people in this space use'],
+    inhouse:  ['Something our own team built', 'An internal system we maintain ourselves']
+  };
+
+  const ARCHETYPE_SUBSTITUTES = {
+    'early-adopter':  ['manual', 'incumbent'],
+    'pragmatist':     ['incumbent', 'manual'],
+    'gatekeeper':     ['inhouse', 'service'],
+    'economic-buyer': ['incumbent', 'service'],
+    'frontline':      ['manual', 'nothing'],
+    'sceptic':        ['nothing', 'manual']
+  };
+
   /* ---- 1. roster: stratified, deterministic, attributes ASSIGNED ---- */
   function roster(audience, n, seedStr) {
     const r = rng(hash('roster' + seedStr + n));
@@ -155,7 +176,15 @@ window.RPanel = (() => {
 
   /* ---- 2. respond: driven by the persona's OWN priors ---- */
   function respond(persona, study, i) {
-    const r = rng(hash('resp' + study.idea + study.decision_q + persona.archetype + i));
+    // Seeded on the IDEA, never on the decision question — the same reasoning
+    // that keeps the roster off it. This utterance is a reaction to the idea;
+    // the reaction to the question is the separate branch utterance below. When
+    // decision_q was in this seed, rephrasing "A or B" as "B or A" changed
+    // every persona's opinion of the product itself, which is not a property
+    // any panel should have. It also makes a variant run genuinely paired: same
+    // idea and audience, same people, same baseline reaction, so the difference
+    // that shows up is the change and not the reseed.
+    const r = rng(hash('resp' + study.idea + persona.archetype + i));
     // Receptiveness is the archetype's lean plus its own noise — not a global
     // roll against one threshold. Two personas in the same segment can differ;
     // two in different segments usually do.
@@ -166,9 +195,35 @@ window.RPanel = (() => {
                  : (r() > 0.5 ? 2 : 1);
     const cats = ARCHETYPE_OBJECTIONS[persona.archetype] || ['other'];
     const category = pick(r, cats);
+
+    // What they use today, and how willing they are to leave it. Willingness is
+    // their interest in the idea DISCOUNTED by how entrenched the incumbent is
+    // — someone maintaining an in-house system does not switch as easily as
+    // someone using nothing, however much they liked the pitch. Without that
+    // discount the substitute section would just restate intent under a new
+    // heading.
+    // Archetype BIASES what they use today, it does not determine it. Picking
+    // strictly from the archetype's two kinds made substitute a pure function
+    // of archetype — and since archetype also drives intent, the substitute
+    // section became a restatement of the segment table wearing a new hat. A
+    // sceptic can be sitting on an expensive incumbent, and that combination is
+    // exactly the interesting one.
+    const subKind = (() => {
+      const preferred = ARCHETYPE_SUBSTITUTES[persona.archetype] || ['nothing'];
+      const kinds = Object.keys(G.SUBSTITUTE_KINDS);
+      const weights = kinds.map(k => (preferred.indexOf(k) !== -1 ? 3 : 1));
+      let t = r() * weights.reduce((x, y) => x + y, 0), i = 0;
+      while (i < kinds.length - 1 && (t -= weights[i]) > 0) i++;
+      return kinds[i];
+    })();
+    const stickiness = (G.SUBSTITUTE_KINDS[subKind] || {}).stickiness || 0;
+    const switchIntent = Math.max(1, Math.min(5,
+      Math.round(intent - stickiness * 2 + 0.5)));
+
     return {
       sentiment, intent, category,
-      text: pick(r, OBJECTIONS[category] || OBJECTIONS.other)
+      text: pick(r, OBJECTIONS[category] || OBJECTIONS.other),
+      substitute: { kind: subKind, text: pick(r, SUBSTITUTES[subKind]), switchIntent }
     };
   }
 
@@ -191,9 +246,16 @@ window.RPanel = (() => {
     // leading verb when only one side carries it restores symmetry, which is
     // what makes the reordering invariant hold.
     const VERB = /^(charge|price|sell|launch|build|buy|lease|offer|target|use|go|do|hire|run|take|make|ship|focus|start|bill|serve)\s+/i;
+    // Only drop the verb when the OTHER side is a bare complement that shares
+    // it — which is what a leading preposition signals. "…charge per clinic or
+    // per filled slot" shares one verb, so dropping it restores symmetry.
+    // "…buy the unit outright or lease it per season" has two different verbs,
+    // and the earlier rule (drop whenever the other side has no leading verb)
+    // stripped "lease" and labelled the option "It per season".
+    const PREP = /^(per|by|to|for|on|at|with|from|in|as|via|through|into|under|over)\b/i;
     const aVerb = VERB.test(a), bVerb = VERB.test(b);
-    if (aVerb && !bVerb) a = a.replace(VERB, '');
-    else if (bVerb && !aVerb) b = b.replace(VERB, '');
+    if (aVerb && !bVerb && PREP.test(b)) a = a.replace(VERB, '');
+    else if (bVerb && !aVerb && PREP.test(a)) b = b.replace(VERB, '');
 
     if (!a || !b || a.length < 3 || b.length < 3) return null;
     const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -266,6 +328,24 @@ window.RPanel = (() => {
       const o = b.objection({ text: res.text, category: res.category });
       b.link(u, o, 'supports', true);
       (objByCat[res.category] = objByCat[res.category] || []).push(o);
+
+      // What they use today, carried on its own utterance so it is excluded
+      // from the headline statistics — the same separation branch preferences
+      // get. The intent on this utterance is willingness to SWITCH, which is a
+      // different quantity from interest in the idea.
+      if (res.substitute && res.substitute.text) {
+        const sNode = b.substitute({ text: res.substitute.text, kind: res.substitute.kind });
+        const su = b.utterance({
+          text: 'Today we use: ' + res.substitute.text,
+          sentiment: res.substitute.switchIntent >= 4 ? 'positive'
+                   : res.substitute.switchIntent === 3 ? 'neutral' : 'skeptical',
+          intent: res.substitute.switchIntent,
+          about: 'substitute'
+        });
+        b.link(pn, su, 'voiced_by', true);
+        b.link(su, pn, 'voiced_by', true);
+        b.link(su, sNode, 'supports', true);
+      }
     });
 
     // Category ranking decides which assumptions are worth modelling at all.
