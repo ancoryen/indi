@@ -96,6 +96,18 @@ thing that cannot be changed after the cards are printed.
 reissued — the destination has to stay repointable for as long as the cards are
 in circulation. Do not "tidy" this to a permanent redirect.
 
+### Do not put comments in vercel.json
+
+JSON has no comments, and the `"//"` key convention that works in most
+tooling is rejected by Vercel outright — it validates the config strictly and
+errors on unknown properties. An early version documented both redirects that
+way; the build failed validation, the previous deployment kept serving, and the
+site sat four days stale behind a completely successful `git push`. Nothing
+looked broken anywhere, which is the worst shape a deploy failure can take.
+
+`test/vercel-config.test.js` now asserts every object in `vercel.json` carries
+only keys Vercel accepts. Explanation goes here, in the docs, not in the config.
+
 ### Case-insensitivity is explicit
 
 Scheme and host are case-insensitive per RFC 3986. **Paths are not.** Since the

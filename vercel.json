@@ -3,13 +3,11 @@
   "trailingSlash": false,
   "redirects": [
     {
-      "//": "Short alias for the printed visiting card. The QR encodes /CARD in uppercase (alphanumeric QR mode is ~5.5 bits/char vs 8 for byte mode, which is what keeps the symbol at 25 modules instead of 29). URL paths are case-sensitive per RFC 3986, so the character class matches all 16 casings explicitly rather than relying on the matcher's default sensitivity. Kept as a temporary redirect: a printed card cannot be reissued, so the destination must stay repointable and must not be cached permanently by browsers.",
       "source": "/:card([cC][aA][rR][dD])",
       "destination": "/visiting_panel",
       "permanent": false
     },
     {
-      "//": "Ashish Narayan's personal card, printed as indizilla.com/ANC and typed by hand, so every casing has to land. The destination is deliberately NOT any casing of /anc: a redirect whose target matches its own source loops forever. Temporary for the same reason as /card — the printed URL must stay repointable.",
       "source": "/:anc([aA][nN][cC])",
       "destination": "/ashish",
       "permanent": false
@@ -17,7 +15,6 @@
   ],
   "headers": [
     {
-      "//": "Served as a contact card rather than an unknown download, so phones open it in the contacts app instead of dropping a file the recipient has to find and tap again.",
       "source": "/assets/card/ashish-narayan.vcf",
       "headers": [
         {
