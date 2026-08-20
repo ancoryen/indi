@@ -115,6 +115,22 @@ chk('structured data title matches the card', ld.jobTitle === CARD.role, ld.jobT
 chk('internal links use the real page, not the alias',
   /href="visiting_panel\.html"/.test(page) && !/href="card"/.test(page));
 
+/* ------------------------------------------------------------------ the QR */
+hr('QR ARTWORK');
+['anc-qr-brand.svg', 'anc-qr-brand.png', 'anc-qr-mono.svg', 'anc-qr-mono.png']
+  .forEach(f => chk('exists: ' + f, fs.existsSync(path.join(REPO, 'assets/card', f))));
+const ancSvg = fs.existsSync(path.join(REPO, 'assets/card/anc-qr-mono.svg'))
+  ? read('assets/card/anc-qr-mono.svg') : '';
+if (ancSvg) {
+  const size = Number((ancSvg.match(/viewBox="0 0 (\d+) /) || [])[1]);
+  console.log('  symbol: ' + size + ' modules across, including the quiet zone');
+  // 25 data modules + 4 quiet each side. If this number grows the symbol got
+  // denser and every printed square got smaller — which is what breaks a scan.
+  chk('still 33 modules across (v2 + quiet zone)', size === 33, String(size));
+  chk('mono variant is pure black on white',
+    /#000000/.test(ancSvg) && /#FFFFFF/.test(ancSvg));
+}
+
 /* --------------------------------------------- the two aliases stay distinct */
 hr('THE TWO PRINTED ALIASES DO NOT COLLIDE');
 const all = vercel.redirects || [];

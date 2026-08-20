@@ -233,3 +233,40 @@ in `js/main.js`.
 
 `test/personal-card.test.js` pins the address on the card page and in the vCard,
 so a future edit cannot quietly split the two apart again.
+
+### The /ANC QR
+
+| | |
+|---|---|
+| File | `assets/card/anc-qr-brand.svg` (ink `#14161A` on white) |
+| Fallback | `assets/card/anc-qr-mono.svg` (pure `#000000` on white) |
+| Raster | the matching `.png`, 2400×2400 |
+| Encodes | `HTTPS://WWW.INDIZILLA.COM/ANC` |
+| Symbol | QR version 2, 25×25 modules, ECC Q — 33×33 with the quiet zone |
+
+Same print rules as the other symbol: 22–25mm, 18mm floor, use the SVG, do not
+crop the border.
+
+**This one uses `WWW.`, where `/CARD` uses the apex — and that is not an
+inconsistency.** "ANC" is one character shorter than "CARD", and that single
+character is exactly what decides it:
+
+| Encoded | Chars | Version | Modules |
+|---|---|---|---|
+| `HTTPS://WWW.INDIZILLA.COM/ANC` | 29 | **2** | **25** |
+| `HTTPS://WWW.INDIZILLA.COM/CARD` | 30 | 3 | 29 |
+
+Version 2 alphanumeric at ECC Q holds exactly 29 characters. The `/ANC` form
+lands precisely on that limit, so it gets the smaller symbol *and* skips the
+apex→www hop. The `/CARD` form is one character over, which is why that symbol
+had to trade the hop for the module size.
+
+Live chains, measured:
+
+```
+HTTPS://WWW.INDIZILLA.COM/ANC   → 307 → /ashish            200   (1 hop)
+HTTPS://INDIZILLA.COM/CARD      → 308 → www → 307 → /visiting_panel  200   (2 hops)
+```
+
+If the path ever changes, re-measure before reprinting. Going from 29 to 30
+characters silently costs a whole QR version and shrinks every printed square.
