@@ -222,9 +222,14 @@ reissued, so the destination has to stay repointable.
 
 `/ancestor`, `/anchor` and `/ancient` correctly do not match.
 
-### One discrepancy to resolve
+### The contact address
 
-The card says **hi@indizilla.com**. The website uses **hello@indizilla.com** in
-thirty places. The page and the vCard both use the card's address, as printed,
-because the card is the thing that cannot be changed — but only one of the two
-addresses should exist. Worth settling before the next print run.
+**hi@indizilla.com**, everywhere. The card and the site disagreed for a while —
+the site had **hello@** in thirty-seven places while the card said **hi@** — and
+the card won, because the card is the thing that cannot be edited once it has
+been handed over. The whole site moved across: every page footer, the JSON-LD
+on the homepage, the invoice template in `js/bills.js`, and the mailto fallback
+in `js/main.js`.
+
+`test/personal-card.test.js` pins the address on the card page and in the vCard,
+so a future edit cannot quietly split the two apart again.

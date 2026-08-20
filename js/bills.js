@@ -17,7 +17,7 @@ window.Bills = (() => {
           <div>
             <img src="assets/logo-mark-black.png" alt="Indizilla" style="width:44px; height:44px; object-fit:contain;">
             <div style="font-family:var(--font-disp); font-weight:800; letter-spacing:-0.02em; margin-top:8px;">INDIZILLA</div>
-            <div style="font-size:12px; color:#8C8F91;">indizilla.com · hello@indizilla.com</div>
+            <div style="font-size:12px; color:#8C8F91;">indizilla.com · hi@indizilla.com</div>
           </div>
           <div style="text-align:right;">
             <div style="font-family:var(--font-disp); font-weight:800; font-size:20px;">${esc(bill.number)}</div>
@@ -41,7 +41,7 @@ window.Bills = (() => {
 
         <div style="font-size:12px; color:#8C8F91; line-height:1.6;">
           Payment method: ${esc(bill.method)}${bill.paymentId ? ' · Ref: ' + esc(bill.paymentId) : ''}<br>
-          This is a system-generated bill. For GST details or corrections, write to hello@indizilla.com.
+          This is a system-generated bill. For GST details or corrections, write to hi@indizilla.com.
         </div>
 
         <div class="bill-actions" style="display:flex; gap:10px; margin-top:26px;">

@@ -1889,9 +1889,13 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   position: relative; padding: 34px 26px 30px;
   border-bottom: 1px solid var(--line-soft); background: var(--surface-alt);
 }
+/* Tracking matches .brand exactly (-0.03em). An earlier version tracked this
+   WIDE at +0.14em, which set the logotype in the opposite direction to the
+   identity it is reproducing — the wordmark is the one piece of type on this
+   page that is not free to have its own opinion. */
 .vcard-wordmark {
-  font-family: var(--font-disp); font-weight: 900; font-size: 24px;
-  letter-spacing: .14em; line-height: 1;
+  font-family: var(--font-disp); font-weight: 900; font-size: 26px;
+  letter-spacing: -0.03em; line-height: 1;
 }
 .vcard-tagline {
   margin: 10px 0 0; font-size: 13px; font-style: italic;
@@ -1933,7 +1937,7 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 
 @media (min-width: 520px) {
   .vcard-brand { padding: 40px 32px 34px; }
-  .vcard-wordmark { font-size: 27px; }
+  .vcard-wordmark { font-size: 30px; }
   .vcard-person { padding: 32px 32px 30px; }
   .vcard-person h1 { font-size: 31px; }
   .vcard-actions { display: flex; }

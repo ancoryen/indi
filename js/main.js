@@ -45,10 +45,10 @@ if (contactForm) {
     }
     const subject = encodeURIComponent(`New enquiry — ${data.get('Business') || data.get('Name') || 'Indizilla website'}`);
     const body = encodeURIComponent(lines.join('\n'));
-    window.location.href = `mailto:hello@indizilla.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:hi@indizilla.com?subject=${subject}&body=${body}`;
     const note = document.getElementById('form-note');
     if (note) {
-      note.textContent = 'Your email app should open with everything filled in. If it doesn’t, write to hello@indizilla.com — we reply within one business day.';
+      note.textContent = 'Your email app should open with everything filled in. If it doesn’t, write to hi@indizilla.com — we reply within one business day.';
       note.hidden = false;
     }
   });
