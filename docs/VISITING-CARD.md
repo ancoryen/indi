@@ -166,3 +166,53 @@ final hop through production can only be confirmed after a deploy — until then
 
 **Do not send artwork to a printer until that check has been run against the
 live site.**
+
+
+---
+
+## The personal card — Ashish Narayan
+
+Printed on the card as **indizilla.com/ANC**, typed by hand rather than scanned,
+so there is no QR for this one. The page is `ashish.html`, served at `/ashish`.
+
+| | |
+|---|---|
+| Name | Ashish Narayan |
+| Title | Business Enablement Specialist |
+| Web | indizilla.com |
+| Phone | +91 91067 19194 |
+| Email | hi@indizilla.com |
+
+The page mirrors the two faces of the printed card. Side one stays minimal by
+the print rules — wordmark, tagline, the small mark bottom-right, nothing else —
+and the test asserts no contact details or links leak onto it. Side two carries
+the same details in the same order, but every one is tappable: a phone number
+you have to retype is a detail you lose.
+
+**Save contact** downloads `assets/card/ashish-narayan.vcf`. It is vCard 3.0
+with CRLF line endings per RFC 6350 — both phone platforms are strict about
+that — and `vercel.json` serves it as `text/vcard` so phones open it in the
+contacts app instead of dropping a file the recipient has to hunt for.
+
+### Why /ANC redirects to /ashish rather than being served at /ANC
+
+A redirect whose destination matches its own source loops forever. The rule has
+to match all eight casings of `/anc`, so the destination cannot itself be any
+casing of `/anc` — hence a different word. Same character-class technique as
+`/card`:
+
+```json
+"source": "/:anc([aA][nN][cC])"
+```
+
+Temporary (307) for the same reason as `/card`: a printed card cannot be
+reissued, so the destination has to stay repointable.
+
+`/ancestor`, `/anchor` and `/ancient` correctly do not match.
+
+### One discrepancy to resolve
+
+The card says **hi@indizilla.com**. The website uses **hello@indizilla.com** in
+thirty places. The page and the vCard both use the card's address, as printed,
+because the card is the thing that cannot be changed — but only one of the two
+addresses should exist. Worth settling before the next print run.

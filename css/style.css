@@ -1866,3 +1866,76 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   .vp-groups { grid-template-columns: 1fr 1fr; gap: 26px 24px; }
   .vp-group h3 { font-size: 16px; }
 }
+
+/* ================================================== Personal visiting card
+   /ANC — Ashish Narayan's card page, typed off a printed card.
+
+   Mirrors the two faces of the physical card: the brand side stays minimal by
+   the print rules (mark, wordmark, one line, nothing else), and the person
+   side carries the same details in the same order — but tappable, because a
+   phone number you have to retype is a detail you lose. */
+.vcard-sec { padding-top: 32px; }
+.vcard {
+  max-width: 460px; margin: 0 auto;
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--surface-raised); overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Side one. The mark sits bottom-right and stays subtle rather than dominant,
+   exactly as the print spec asks — so it is small, and the whitespace around
+   the wordmark is doing the work. */
+.vcard-brand {
+  position: relative; padding: 34px 26px 30px;
+  border-bottom: 1px solid var(--line-soft); background: var(--surface-alt);
+}
+.vcard-wordmark {
+  font-family: var(--font-disp); font-weight: 900; font-size: 24px;
+  letter-spacing: .14em; line-height: 1;
+}
+.vcard-tagline {
+  margin: 10px 0 0; font-size: 13px; font-style: italic;
+  color: var(--text-soft); letter-spacing: .01em;
+}
+.vcard-mark { position: absolute; right: 22px; bottom: 22px; opacity: .85; }
+
+/* Side two. */
+.vcard-person { padding: 28px 26px 26px; }
+.vcard-person h1 {
+  font-size: 27px; line-height: 1.15; margin: 0; letter-spacing: -0.02em;
+}
+.vcard-role {
+  margin: 6px 0 22px; font-size: 14px; font-weight: 600;
+  color: var(--accent-ink); letter-spacing: .01em;
+}
+
+.vcard-lines { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 8px; }
+.vcard-lines a {
+  display: grid; grid-template-columns: 58px 1fr; align-items: baseline; gap: 12px;
+  padding: 12px 14px; min-height: 44px;
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--surface); text-decoration: none; color: var(--text);
+  transition: border-color .15s ease, background .15s ease;
+}
+.vcard-lines a:hover, .vcard-lines a:focus-visible {
+  border-color: var(--accent); background: var(--accent-tint);
+}
+/* --text-muted lands at 3.11:1 here, and these are 10px caps. Small type needs
+   more contrast, not less, so the labels take the softer ink. */
+.vc-k {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-soft);
+}
+.vc-v { font-size: 15px; font-weight: 500; word-break: break-word; }
+
+.vcard-actions { display: grid; gap: 10px; }
+.vcard-actions .btn { width: 100%; text-align: center; justify-content: center; }
+
+@media (min-width: 520px) {
+  .vcard-brand { padding: 40px 32px 34px; }
+  .vcard-wordmark { font-size: 27px; }
+  .vcard-person { padding: 32px 32px 30px; }
+  .vcard-person h1 { font-size: 31px; }
+  .vcard-actions { display: flex; }
+  .vcard-actions .btn { width: auto; flex: 1; }
+}

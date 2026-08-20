@@ -7,6 +7,24 @@
       "source": "/:card([cC][aA][rR][dD])",
       "destination": "/visiting_panel",
       "permanent": false
+    },
+    {
+      "//": "Ashish Narayan's personal card, printed as indizilla.com/ANC and typed by hand, so every casing has to land. The destination is deliberately NOT any casing of /anc: a redirect whose target matches its own source loops forever. Temporary for the same reason as /card — the printed URL must stay repointable.",
+      "source": "/:anc([aA][nN][cC])",
+      "destination": "/ashish",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "//": "Served as a contact card rather than an unknown download, so phones open it in the contacts app instead of dropping a file the recipient has to find and tap again.",
+      "source": "/assets/card/ashish-narayan.vcf",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/vcard; charset=utf-8"
+        }
+      ]
     }
   ]
 }
