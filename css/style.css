@@ -1798,3 +1798,71 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 .dbs-bar i { display: block; height: 100%; background: var(--accent); }
 .dbs-n { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 @media (max-width: 720px) { .db-share { grid-template-columns: 46px 1fr; } .dbs-n { grid-column: 1 / -1; } }
+
+/* ====================================================== Visiting-card panel
+   /visiting_panel — the page reached by scanning a physical card. Built from
+   existing tokens and components; the only new pieces are the audience fork
+   and the symptom lists, which no other page needs.
+
+   Mobile-first on purpose: this page is opened on a phone, standing up,
+   moments after someone was handed a card. Every rule below is the phone
+   layout, and the media queries only widen it. */
+.vp-choose-sec { padding-top: 0; }
+.vp-choose { display: grid; gap: 12px; }
+.vp-pick {
+  display: grid; gap: 6px; padding: 20px;
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--surface-raised); text-decoration: none; color: var(--text);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.vp-pick:hover, .vp-pick:focus-visible { border-color: var(--accent); box-shadow: var(--shadow-soft); transform: translateY(-2px); }
+.vp-pick-k { font-family: var(--font-disp); font-size: 18px; font-weight: 700; line-height: 1.25; }
+.vp-pick-v { font-size: 14px; color: var(--text-soft); line-height: 1.5; }
+.vp-pick-go { font-size: 13px; font-weight: 600; color: var(--accent-ink); margin-top: 4px; }
+
+.vp-groups { display: grid; gap: 26px; }
+.vp-group h3 { font-size: 15px; margin-bottom: 10px; letter-spacing: -0.01em; }
+.vp-symptoms { list-style: none; display: grid; gap: 8px; margin: 0; padding: 0; }
+/* The symptom IS the link. A visitor scanning for the sentence that matches
+   their week should be able to tap the sentence, not hunt for a service name
+   next to it. Generous tap targets — this is read one-handed. */
+.vp-symptoms a {
+  display: block; padding: 13px 40px 13px 15px; position: relative;
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--surface-raised); color: var(--text-soft);
+  font-size: 15px; line-height: 1.45; text-decoration: none;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+.vp-symptoms a::after {
+  content: "→"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-weight: 700; transition: transform .15s ease, color .15s ease;
+}
+.vp-symptoms a:hover, .vp-symptoms a:focus-visible {
+  border-color: var(--accent); background: var(--accent-tint); color: var(--text);
+}
+.vp-symptoms a:hover::after, .vp-symptoms a:focus-visible::after {
+  color: var(--accent-ink); transform: translateY(-50%) translateX(3px);
+}
+
+.vp-cta { margin-top: 30px; }
+.vp-cta-row { display: grid; gap: 10px; margin-top: 16px; }
+.vp-cta-row .btn { width: 100%; text-align: center; justify-content: center; }
+
+.vp-idea-sec { border-top: 1px solid var(--line-soft); }
+.vp-foot-sec { padding-top: 0; }
+/* --text-muted lands at 3.11:1 here. Fine for an incidental caption, thin for
+   a closing line that is asking for a reply. */
+.vp-foot { font-size: 14px; color: var(--text-soft); text-align: center; }
+.vp-foot a { color: var(--text-soft); }
+
+@media (min-width: 620px) {
+  .vp-cta-row { display: flex; flex-wrap: wrap; }
+  .vp-cta-row .btn { width: auto; }
+}
+@media (min-width: 760px) {
+  .vp-choose { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .vp-pick { padding: 26px; }
+  .vp-pick-k { font-size: 20px; }
+  .vp-groups { grid-template-columns: 1fr 1fr; gap: 26px 24px; }
+  .vp-group h3 { font-size: 16px; }
+}

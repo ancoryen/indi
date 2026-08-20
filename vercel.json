@@ -1,4 +1,12 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "//": "Short alias for the printed visiting card. The QR encodes /CARD in uppercase (alphanumeric QR mode is ~5.5 bits/char vs 8 for byte mode, which is what keeps the symbol at 25 modules instead of 29). URL paths are case-sensitive per RFC 3986, so the character class matches all 16 casings explicitly rather than relying on the matcher's default sensitivity. Kept as a temporary redirect: a printed card cannot be reissued, so the destination must stay repointable and must not be cached permanently by browsers.",
+      "source": "/:card([cC][aA][rR][dD])",
+      "destination": "/visiting_panel",
+      "permanent": false
+    }
+  ]
 }
