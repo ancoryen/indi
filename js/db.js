@@ -23,37 +23,37 @@ window.DB = (() => {
   ];
 
   const SERVICES = [
-    { id: 'gbp', name: 'Google Business Profile', price: 2999 },
-    { id: 'brand', name: 'Brand Identity', price: 7999 },
-    { id: 'website', name: 'Business Website', price: 14999 },
-    { id: 'landing', name: 'Landing Page', price: 5999 },
-    { id: 'seo', name: 'SEO', price: 6999 },
-    { id: 'meta-ads', name: 'Meta Ads management', price: 4999, monthly: true },
-    { id: 'google-ads', name: 'Google Ads management', price: 4999, monthly: true },
-    { id: 'crm', name: 'CRM Setup', price: 5999 },
-    { id: 'email', name: 'Business Email', price: 999 },
-    { id: 'chatbot', name: 'AI Chatbot', price: 7999 },
-    { id: 'automation', name: 'Business Automation', price: 4999 },
-    { id: 'social', name: 'Social Media', price: 6999, monthly: true },
-    { id: 'maintenance', name: 'Website Maintenance', price: 1499, monthly: true },
-    { id: 'reviews', name: 'Review Management', price: 2499, monthly: true },
-    { id: 'profile-design', name: 'Business Profile Design', price: 1999 },
-    { id: 'catalogue', name: 'Digital Catalogue', price: 3999 },
-    { id: 'whatsapp', name: 'WhatsApp Business', price: 1999 },
-    { id: 'booking', name: 'Booking System', price: 3999 },
-    { id: 'tier-starter', name: 'Starter package', price: 4999 },
-    { id: 'tier-growth', name: 'Growth package', price: 14999 },
-    { id: 'tier-partner', name: 'Partner plan', price: 9999, monthly: true }
+    { id: 'gbp', name: 'Google Business Profile', price: 7999 },
+    { id: 'brand', name: 'Brand Identity', price: 24999 },
+    { id: 'website', name: 'Business Website', price: 39999 },
+    { id: 'landing', name: 'Landing Page', price: 14999 },
+    { id: 'seo', name: 'SEO', price: 14999 },
+    { id: 'meta-ads', name: 'Meta Ads management', price: 11999, monthly: true },
+    { id: 'google-ads', name: 'Google Ads management', price: 11999, monthly: true },
+    { id: 'crm', name: 'CRM Setup', price: 14999 },
+    { id: 'email', name: 'Business Email', price: 2499 },
+    { id: 'chatbot', name: 'AI Chatbot', price: 17999 },
+    { id: 'automation', name: 'Business Automation', price: 12999 },
+    { id: 'social', name: 'Social Media', price: 14999, monthly: true },
+    { id: 'maintenance', name: 'Website Maintenance', price: 3999, monthly: true },
+    { id: 'reviews', name: 'Review Management', price: 5999, monthly: true },
+    { id: 'profile-design', name: 'Business Profile Design', price: 4999 },
+    { id: 'catalogue', name: 'Digital Catalogue', price: 9999 },
+    { id: 'whatsapp', name: 'WhatsApp Business', price: 4999 },
+    { id: 'booking', name: 'Booking System', price: 9999 },
+    { id: 'tier-starter', name: 'Starter package', price: 24999 },
+    { id: 'tier-growth', name: 'Growth package', price: 79999 },
+    { id: 'tier-partner', name: 'Partner plan', price: 34999, monthly: true }
   ];
 
   // Packages, used by the à la carte upsell: clubbing 2+ services that live inside
   // a package costs a combination premium — the package is always the better deal.
   const PACKAGES = [
-    { id: 'tier-starter', name: 'Starter package', price: 4999, monthly: false,
+    { id: 'tier-starter', name: 'Starter package', price: 24999, monthly: false,
       includes: ['gbp', 'landing', 'profile-design', 'whatsapp'] },
-    { id: 'tier-growth', name: 'Growth package', price: 14999, monthly: false,
+    { id: 'tier-growth', name: 'Growth package', price: 79999, monthly: false,
       includes: ['gbp', 'landing', 'profile-design', 'whatsapp', 'brand', 'website', 'seo', 'email', 'booking'] },
-    { id: 'tier-partner', name: 'Partner plan', price: 9999, monthly: true,
+    { id: 'tier-partner', name: 'Partner plan', price: 34999, monthly: true,
       includes: ['maintenance', 'social', 'meta-ads', 'google-ads', 'reviews'] }
   ];
   const CLUB_PREMIUM = 0.25; // +25% on à-la-carte items that overlap the same package

@@ -115,6 +115,52 @@
 
       </div>
 
+      <!-- The pressure-relief section. Nobody standing with a card in hand
+           should have to compose a message: leave a name and number and the
+           next move is Ashish's. Calling now and saving the contact stay
+           visible throughout — a form must never feel like the only door. -->
+      <div class="cbf" id="callback">
+        <div class="cbf-head">
+          <h2>Or let us call you.</h2>
+          <p>Leave your details and expect a callback — no message to write, no pitch to sit through. Prefer it the other way? <a href="tel:+919106719194">Call now</a> or save the contact above.</p>
+        </div>
+
+        <div class="cbf-tabs" role="tablist" aria-label="What would you like?">
+          <button class="cbf-tab is-on" type="button" role="tab" data-intent="callback" aria-selected="true">Request a callback</button>
+          <button class="cbf-tab" type="button" role="tab" data-intent="promo" id="promo" aria-selected="false">Get a promo code</button>
+        </div>
+        <p class="cbf-note" id="cbf-note">Leave your number and expect a call back within one business day. A conversation, not a pitch.</p>
+
+        <form id="cbf-form" novalidate="">
+          <div class="cbf-grid">
+            <label class="cbf-field">
+              <span>Name <em>required</em></span>
+              <input id="cbf-name" name="name" type="text" autocomplete="name" required>
+            </label>
+            <label class="cbf-field">
+              <span>Phone <em>required</em></span>
+              <input id="cbf-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+            </label>
+            <label class="cbf-field">
+              <span>Email <em>optional</em></span>
+              <input id="cbf-email" name="email" type="email" autocomplete="email">
+            </label>
+            <label class="cbf-field cbf-wide">
+              <span>What's this about? <em>optional</em></span>
+              <textarea id="cbf-context" name="context" rows="3" placeholder="Your business, what you're trying to fix, anything useful for the call."></textarea>
+            </label>
+          </div>
+          <button class="btn btn-primary" type="submit" id="cbf-submit">Ask for a callback <span class="arrow">↗</span></button>
+        </form>
+
+        <div class="cbf-done" id="cbf-done" hidden>
+          <h3>Done — expect a call.</h3>
+          <p></p>
+        </div>
+
+        <p class="cbf-offer">First 50 businesses onboarded from this card receive a custom voucher — we call, understand your use case, and shape it to your business. Not a generic percent-off.</p>
+      </div>
+
     </div>
   </section>
 </main>
@@ -127,7 +173,7 @@
           <img class="logo-light" src="assets/logo-mark-black.png" alt=""><img class="logo-dark" src="assets/logo-mark-white.png" alt="">
           INDIZILLA
         </a>
-        <p class="tagline">You don’t need <span data-anchor>₹50,000</span> to start looking professional.</p>
+        <p class="tagline">Get Found. Be Seen. Get Chosen.</p>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
@@ -155,12 +201,14 @@
     <div class="footer-bottom">
       <label class="market-note">Prices shown for <select class="market-picker" aria-label="Choose your market"></select></label>
       <span>© 2026 Indizilla. All rights reserved.</span>
-      <span>Simple. Affordable. Built to last.</span>
+      <span>Considered. Crafted. Built to last.</span>
     </div>
   </div>
 </footer>
 
+<script src="js/config.js"></script>
 <script src="js/geo.js"></script>
+<script src="js/callback.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

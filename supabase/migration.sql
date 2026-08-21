@@ -662,3 +662,27 @@ begin
 end $$;
 
 -- Done — v2 additions in place.
+
+-- ============================================================ callback_requests
+-- Leads from the visiting-card page (/ANC). Anonymous visitors may INSERT and
+-- nothing else: no select, no update, no delete — a lead form must never be a
+-- read path. Handled operationally from the dashboard / SQL editor.
+create table if not exists public.callback_requests (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null,
+  phone text not null,
+  email text,
+  context text,
+  intent text not null default 'callback' check (intent in ('callback', 'promo')),
+  source text not null default 'ANC',
+  handled boolean not null default false
+);
+
+alter table public.callback_requests enable row level security;
+
+drop policy if exists "anon can request a callback" on public.callback_requests;
+create policy "anon can request a callback"
+  on public.callback_requests for insert
+  to anon, authenticated
+  with check (true);

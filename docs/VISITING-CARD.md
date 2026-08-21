@@ -270,3 +270,17 @@ HTTPS://INDIZILLA.COM/CARD      → 308 → www → 307 → /visiting_panel  200
 
 If the path ever changes, re-measure before reprinting. Going from 29 to 30
 characters silently costs a whole QR version and shrinks every printed square.
+
+### The callback form
+
+`/ANC` now carries a form: name and phone mandatory, email and context
+secondary, two intents — a callback, or the first-50 promo voucher (we call,
+learn the use case, and shape the voucher to it).
+
+Delivery: a Supabase REST insert into `callback_requests` (anon INSERT-only —
+a lead form must never be a read path), with a prefilled mailto to
+hi@indizilla.com whenever that fails. **Until `supabase/migration.sql` is
+re-run against production, every submission arrives by the mailto path** —
+functional from day one, upgraded to database capture by the next migration
+run. Leads then live in the `callback_requests` table (Supabase dashboard →
+Table Editor), newest first, with a `handled` flag to work through.

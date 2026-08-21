@@ -115,6 +115,37 @@ chk('structured data title matches the card', ld.jobTitle === CARD.role, ld.jobT
 chk('internal links use the real page, not the alias',
   /href="visiting_panel\.html"/.test(page) && !/href="card"/.test(page));
 
+/* ------------------------------------------------------------ the callback */
+hr('CALLBACK FORM');
+// Name and phone are the mandatory pair; email and context are secondary.
+chk('name field is required', /id="cbf-name"[^>]*\brequired\b/.test(page));
+chk('phone field is required', /id="cbf-phone"[^>]*\brequired\b/.test(page));
+chk('email field is optional', /id="cbf-email"(?![^>]*\brequired\b)[^>]*>/.test(page));
+chk('context field is optional', /id="cbf-context"(?![^>]*\brequired\b)[^>]*>/.test(page));
+chk('phone input gets the tel keyboard', /id="cbf-phone"[^>]*inputmode="tel"/.test(page));
+chk('both intents are offered', /data-intent="callback"/.test(page) && /data-intent="promo"/.test(page));
+chk('the promo offer names the first-50 window', /First 50/.test(page));
+// Pressure relief: the form must never read as the only door.
+chk('call-now stays visible beside the form',
+  (page.match(/href="tel:\+919106719194"/g) || []).length >= 2);
+chk('callback.js is wired', /src="js\/callback\.js"/.test(page) &&
+  fs.existsSync(path.join(REPO, 'js/callback.js')));
+
+// The delivery path: anon INSERT into callback_requests, and nothing else —
+// a lead form must never be a read path.
+const migration = read('supabase/migration.sql');
+chk('migration creates callback_requests',
+  /create table if not exists public\.callback_requests/.test(migration));
+chk('RLS is enabled on it',
+  /alter table public\.callback_requests enable row level security/.test(migration));
+chk('anon may only insert',
+  /callback_requests for insert/.test(migration) &&
+  !/callback_requests for (select|update|delete)/.test(migration));
+const cb = read('js/callback.js');
+chk('client inserts to the table the migration creates', /callback_requests/.test(cb));
+chk('failure falls back to email, never a fake success',
+  /mailto:hi@indizilla\.com/.test(cb));
+
 /* ------------------------------------------------------------------ the QR */
 hr('QR ARTWORK');
 ['anc-qr-brand.svg', 'anc-qr-brand.png', 'anc-qr-mono.svg', 'anc-qr-mono.png']
