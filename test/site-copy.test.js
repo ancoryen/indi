@@ -162,6 +162,22 @@ const pkgBlock = db.slice(db.indexOf('const PACKAGES'), db.indexOf('const CLUB_P
     chk(id + ' costs less than its parts (' + price + ' vs ' + sum + ')', Number(price) < sum);
   });
 
+/* ------------------------------------------------------ 6. the Build page */
+hr('BUILD — IDEAS TO PRODUCTS');
+const build = read('build.html');
+chk('build.html exists with the hook', /Don't let it/.test(build));
+chk('names the offering', /MVP/.test(build) && /[Ww]eb apps/.test(build) && /[Pp]latforms/.test(build));
+chk('carries the promise', /Tell us what/.test(build) && /tangled in how/i.test(build));
+chk('the tempo is a sequence, not a slogan',
+  /Design fast/.test(build) && /Launch small/.test(build) &&
+  /Learn honestly/.test(build) && /Adapt quickly/.test(build));
+chk('proof is the real project', /GetPharm/.test(build) && /getpharm\.in/.test(build));
+chk('routes to Research for validation', /research\.html/.test(build));
+chk('routes to the Launch package', /pricing\.html#founders/.test(build));
+chk('no invented metrics on the page', !/\d+\s*(%|×)\s*(more|faster|growth)/i.test(build));
+chk('index carries the Build teaser', /id="build"/.test(read('index.html')));
+chk('services carries the Build panel', /id="build"/.test(read('services.html')));
+
 console.log('\n' + '='.repeat(70) + '\nSUMMARY\n' + '='.repeat(70));
 console.log('passed: ' + pass + '   FAILED: ' + fail);
 fails.forEach(f => console.log('  x ' + f));

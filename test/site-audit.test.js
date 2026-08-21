@@ -72,8 +72,8 @@ hr('NAV CONSISTENT ON MARKETING PAGES');
 // Pages carrying the standard marketing nav (they link services.html) must all
 // offer the same destinations; app pages (admin, the study wizard) keep their
 // own reduced navs on purpose.
-const NAV_EXPECT = ['services.html', 'pricing.html', 'print.html', 'research.html',
-                    'portfolio.html', 'about.html'];
+const NAV_EXPECT = ['services.html', 'build.html', 'pricing.html', 'print.html',
+                    'research.html', 'portfolio.html', 'about.html'];
 for (const f of pages) {
   const s = read(f);
   if (!s.includes('main-nav')) continue;
