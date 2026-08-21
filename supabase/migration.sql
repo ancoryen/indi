@@ -752,3 +752,49 @@ $$;
 -- The webhook function runs with the service role, which bypasses RLS; the
 -- function exists so the update is one audited statement, not ad-hoc SQL.
 revoke execute on function public.mark_payment_verified(text) from anon, authenticated;
+
+-- ============================================ leads become workable (own CRM)
+-- Admins read and work the lead queue from the dashboard; anon stays
+-- INSERT-only. This is the "we sell CRM but don't use one" gap, closed.
+drop policy if exists "admins can read leads" on public.callback_requests;
+create policy "admins can read leads"
+  on public.callback_requests for select to authenticated
+  using (public.is_admin());
+drop policy if exists "admins can update leads" on public.callback_requests;
+create policy "admins can update leads"
+  on public.callback_requests for update to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+-- Admins manage reviews from the dashboard (insert real ones, publish, pull).
+drop policy if exists "admins manage reviews" on public.reviews;
+create policy "admins manage reviews"
+  on public.reviews for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+-- ================================================================ subscribers
+-- Newsletter capture: email in, nothing else required. Anon INSERT-only.
+create table if not exists public.subscribers (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  email text not null,
+  source text not null default 'resources'
+);
+alter table public.subscribers enable row level security;
+drop policy if exists "anon can subscribe" on public.subscribers;
+create policy "anon can subscribe"
+  on public.subscribers for insert to anon, authenticated with check (true);
+
+-- ============================================================== client errors
+-- The front line of monitoring: the site reports its own JS errors. Sampled
+-- client-side; anon INSERT-only; worked from the dashboard/SQL editor.
+create table if not exists public.client_errors (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  path text,
+  message text,
+  source text
+);
+alter table public.client_errors enable row level security;
+drop policy if exists "anon can report an error" on public.client_errors;
+create policy "anon can report an error"
+  on public.client_errors for insert to anon, authenticated with check (true);

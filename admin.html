@@ -58,6 +58,7 @@
         <button class="dash-tab" data-tab="users" type="button">Clients</button>
         <button class="dash-tab" data-tab="coupons" type="button">Coupons</button>
         <button class="dash-tab" data-tab="research" type="button">Research</button>
+        <button class="dash-tab" data-tab="leads" type="button">Leads</button>
       </div>
 
       <!-- JOB SHEET -->
@@ -117,6 +118,15 @@
       </section>
 
       <!-- RESEARCH -->
+      <!-- LEADS — the callback/quote queue, workable in place. -->
+      <section class="dash-panel" id="panel-leads" hidden>
+        <div class="card">
+          <h3 style="font-size:17px; margin-bottom:6px;">Callback &amp; quote requests</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Newest first. Tick a lead once you've called — it drops to the bottom. Sources: ANC (visiting card), CONTACT, PRINT.</p>
+          <div id="leads-list"><p class="hint">Loading…</p></div>
+        </div>
+      </section>
+
       <section class="dash-panel" id="panel-research" hidden>
         <div class="dash-grid">
           <div class="card">
@@ -174,5 +184,6 @@
 <script src="js/research-db.js"></script>
 <script src="js/research-admin.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/leads-admin.js"></script>
 </body>
 </html>

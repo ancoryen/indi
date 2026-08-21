@@ -208,6 +208,42 @@ chk('footer links reach the legal pages from the homepage',
   /href="privacy\.html"/.test(read('index.html')) &&
   /href="refunds\.html"/.test(read('index.html')));
 
+/* -------------------------------------------- 8b. section-4 completion pass */
+hr('SECTION-4 COMPLETIONS');
+// Cart: renamed, and the rogue page-only nav item is gone — the nav must be
+// identical on every marketing page.
+const cart = read('cart.html');
+chk('cart is named Custom Bundle', /<title>Custom Bundle/.test(cart));
+chk('no user-facing "à la carte" remains',
+  pages.every(f => !/la carte|à-la-carte/i.test(read(f))), 'somewhere');
+chk('cart nav carries no page-only item', !/>À la carte</.test(cart) &&
+  !/cart\.html" class="active"/.test(cart.match(/<nav class="main-nav"[\s\S]*?<\/nav>/)[0]));
+// Seed reviews render today; flagged for replacement.
+const reviewsJs = read('js/reviews.js');
+chk('seed reviews exist and are flagged as placeholders',
+  /SEED REVIEWS — placeholder/.test(reviewsJs) && /render\(SEED/.test(reviewsJs));
+chk('database rows still take precedence over seeds',
+  /if \(Array\.isArray\(rows\) && rows\.length\) render\(rows\)/.test(reviewsJs));
+// Print price match.
+chk('visiting cards price-matched', /data-from="249"/.test(read('print.html')));
+chk('bands carry the re-verify note', /re-verify before any reprint/.test(read('js/print.js')));
+// Booking slots on contact.
+chk('contact offers preferred day and time',
+  /id="cbf-day"/.test(read('contact.html')) && /id="cbf-time"/.test(read('contact.html')));
+chk('slot folds into the lead context', /Preferred slot/.test(read('js/callback.js')));
+// Own-medicine closures.
+chk('admin has a lead queue', /panel-leads/.test(read('admin.html')) &&
+  fs.existsSync(path.join(REPO, 'js/leads-admin.js')));
+chk('WhatsApp bubble on the homepage', /wa-fab/.test(read('index.html')));
+chk('newsletter capture on resources', /nl-form/.test(read('resources.html')) &&
+  fs.existsSync(path.join(REPO, 'js/newsletter.js')));
+chk('client errors are reported', /client_errors/.test(read('js/metrics.js')));
+chk('footer states the operating identity', /Operated from India/.test(read('index.html')));
+const mig2 = read('supabase/migration.sql');
+chk('migration covers subscribers, client_errors and admin lead policies',
+  /public\.subscribers/.test(mig2) && /public\.client_errors/.test(mig2) &&
+  /admins can read leads/.test(mig2));
+
 /* --------------------------------------------- 8. comparison page, print bands */
 hr('COMPARE PAGE AND PRINT BANDS');
 const compare = read('compare.html');

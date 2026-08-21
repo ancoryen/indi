@@ -77,7 +77,17 @@ window.Callback = (() => {
       name,
       phone,
       email: $('cbf-email').value.trim() || null,
-      context: $('cbf-context').value.trim() || null,
+      context: (() => {
+        // Contact adds preferred-slot selects; fold them into the context so
+        // the call lands when the visitor said it suits them.
+        const parts = [$('cbf-context') ? $('cbf-context').value.trim() : ''];
+        const day = $('cbf-day'), time = $('cbf-time');
+        if ((day && day.value) || (time && time.value)) {
+          parts.push('Preferred slot: ' +
+            [day && day.value, time && time.value].filter(Boolean).join(', '));
+        }
+        return parts.filter(Boolean).join(' | ') || null;
+      })(),
       intent: state.intent,
       // Which page produced the lead — /ANC by default, overridden per page.
       source: document.body.dataset.cbfSource || 'ANC'

@@ -109,14 +109,17 @@ window.PrintQuote = (() => {
      Unit prices fall as quantity rises; the band is ±12% around the midpoint
      because material and finish move the real number. */
   const BANDS = {
-    'Visiting cards':                { unit: '100 cards', steps: { 100: 999, 250: 2199, 500: 3899, 1000: 6999 } },
+    // Price-matched against leading online print shops' public list prices,
+    // August 2026 — re-verify before any reprint of these numbers. Where we
+    // were already at or under the market figure, the price stayed.
+    'Visiting cards':                { unit: '100 cards', steps: { 100: 249, 250: 549, 500: 949, 1000: 1699 } },
     'T-shirts & branded merch':      { unit: 'pieces',    steps: { 10: 3490, 25: 7990, 50: 14490, 100: 26990 } },
     'Branded diaries & notebooks':   { unit: 'pieces',    steps: { 10: 2990, 25: 6740, 50: 12490, 100: 22990 } },
-    'Letterheads & envelopes':       { unit: 'sheets',    steps: { 100: 899, 250: 1999, 500: 3599, 1000: 6499 } },
+    'Letterheads & envelopes':       { unit: 'sheets',    steps: { 100: 749, 250: 1699, 500: 2999, 1000: 5399 } },
     'Bill books & receipt pads':     { unit: 'pads',      steps: { 5: 2995, 10: 5490, 25: 12490, 50: 22990 } },
-    'Stickers & labels':             { unit: 'sheet sets',steps: { 5: 2495, 10: 4490, 25: 9990, 50: 17990 } },
-    'Standees & banners':            { unit: 'pieces',    steps: { 1: 1299, 3: 3599, 5: 5699, 10: 10499 } },
-    'Business essentials kit':       { unit: 'kits',      steps: { 1: 799, 5: 3699, 10: 6899, 25: 15990 } }
+    'Stickers & labels':             { unit: 'sheet sets',steps: { 5: 1495, 10: 2699, 25: 5999, 50: 10999 } },
+    'Standees & banners':            { unit: 'pieces',    steps: { 1: 499, 3: 1299, 5: 1999, 10: 3699 } },
+    'Business essentials kit':       { unit: 'kits',      steps: { 1: 499, 5: 2299, 10: 4299, 25: 9499 } }
   };
   const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
   const qty = {};   // item -> chosen quantity label

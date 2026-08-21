@@ -138,9 +138,14 @@ chk('migration creates callback_requests',
   /create table if not exists public\.callback_requests/.test(migration));
 chk('RLS is enabled on it',
   /alter table public\.callback_requests enable row level security/.test(migration));
-chk('anon may only insert',
+// Anon inserts; only admins may read or work the queue. The original check
+// banned select/update outright — the admin lead queue legitimately adds
+// them, gated by is_admin(), so the assertion now checks the gate instead.
+chk('anon may only insert; reads and updates are admin-gated',
   /callback_requests for insert/.test(migration) &&
-  !/callback_requests for (select|update|delete)/.test(migration));
+  [...migration.matchAll(/callback_requests for (select|update)[\s\S]{0,160}?;/g)]
+    .every(m => /is_admin\(\)/.test(m[0])) &&
+  !/callback_requests for delete/.test(migration));
 const cb = read('js/callback.js');
 chk('client inserts to the table the migration creates', /callback_requests/.test(cb));
 chk('failure falls back to email, never a fake success',

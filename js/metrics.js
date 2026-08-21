@@ -35,4 +35,25 @@
       body
     }).catch(() => { /* table absent or offline — never the visitor's problem */ });
   } catch (e) { /* never the visitor's problem */ }
+
+  // Front-line monitoring: the site reports its own JS errors. Capped at two
+  // per page view so a loop cannot flood anything; same silent-failure rule.
+  try {
+    const cfg = window.INDIZILLA_CONFIG || {};
+    if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
+    let sent = 0;
+    window.addEventListener('error', (e) => {
+      if (sent >= 2) return; sent++;
+      fetch(cfg.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/client_errors', {
+        method: 'POST', keepalive: true,
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: 'Bearer ' + cfg.supabaseAnonKey,
+                   'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          path: location.pathname,
+          message: String(e.message || '').slice(0, 300),
+          source: String((e.filename || '') + ':' + (e.lineno || 0)).slice(0, 200)
+        })
+      }).catch(() => {});
+    });
+  } catch (e) { /* same rule */ }
 })();

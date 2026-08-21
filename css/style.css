@@ -1961,7 +1961,7 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   margin-bottom: 5px; }
 .cbf-field em { font-style: normal; font-weight: 500; text-transform: none;
   letter-spacing: 0; color: var(--text-muted); margin-left: 4px; }
-.cbf-field input, .cbf-field textarea { width: 100%; font: inherit; font-size: 15px;
+.cbf-field input, .cbf-field textarea, .cbf-field select { width: 100%; font: inherit; font-size: 15px;
   padding: 11px 13px; min-height: 44px; color: var(--text);
   border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
 .cbf-field textarea { min-height: 80px; resize: vertical; }
@@ -2052,3 +2052,37 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 .pc-band-out { font-size: 13.5px; font-weight: 600; color: var(--text);
   font-variant-numeric: tabular-nums; }
 .pc-band-out small { font-weight: 500; color: var(--text-muted); }
+
+/* ---- admin lead queue ---- */
+.lead-row { display: grid; grid-template-columns: 30px 1fr; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.lead-row.is-handled { opacity: .5; }
+.lead-tick input { width: 18px; height: 18px; accent-color: var(--accent-hover); cursor: pointer; }
+.lead-top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
+.lead-src { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--accent-ink); border: 1px solid var(--accent-ink); border-radius: 999px; padding: 0 7px; }
+.lead-when { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+.lead-contact { font-size: 13px; margin-top: 3px; }
+.lead-contact a { color: var(--accent-ink); font-weight: 600; }
+.lead-ctx { font-size: 13px; color: var(--text-soft); margin-top: 4px; line-height: 1.5; }
+
+/* ---- floating WhatsApp bubble (marketing pages) ---- */
+.wa-fab { position: fixed; right: 18px; bottom: 18px; z-index: 60;
+  width: 52px; height: 52px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  background: #25D366; color: #fff; box-shadow: 0 4px 18px rgba(20,22,26,.22);
+  transition: transform .15s ease; }
+.wa-fab:hover { transform: translateY(-2px); }
+.wa-fab svg { width: 26px; height: 26px; }
+@media (max-width: 720px) { .wa-fab { right: 14px; bottom: 14px; } }
+
+/* ---- newsletter capture ---- */
+.nl-box { border: 1px solid var(--accent); background: var(--accent-tint);
+  border-radius: var(--r-lg); padding: 22px; margin-top: 34px; max-width: 560px; }
+.nl-box h3 { font-size: 17px; margin: 0 0 6px; }
+.nl-box p { font-size: 14px; color: var(--text-soft); margin: 0 0 14px; }
+.nl-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.nl-row input { flex: 1; min-width: 200px; font: inherit; font-size: 15px;
+  padding: 11px 13px; border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--surface-raised); color: var(--text); min-height: 44px; }
+.nl-done { font-size: 14px; font-weight: 600; color: var(--accent-ink); }

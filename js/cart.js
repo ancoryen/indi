@@ -91,7 +91,7 @@
     if (!user) { window.location.href = 'login.html?next=cart.html'; return; }
 
     const isPackage = q.items.length === 1 && q.items[0].id.startsWith('tier-');
-    const name = isPackage ? q.items[0].name : 'À la carte: ' + q.items.map(i => i.name).join(' + ');
+    const name = isPackage ? q.items[0].name : 'Custom bundle: ' + q.items.map(i => i.name).join(' + ');
     const serviceId = isPackage ? q.items[0].id : 'cart';
 
     Payments.pay({
