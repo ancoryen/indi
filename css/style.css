@@ -227,31 +227,22 @@ h4 { font-size: 16px; font-weight: 700; }
 .main-nav a:hover { background: var(--mist); color: var(--text); }
 .main-nav a.active { color: var(--text); font-weight: 700; }
 
+/* One compact icon button — the nav earned the space back when Build and
+   Print joined it. Shows the theme you would switch TO: moon in light mode,
+   sun in dark. The head script always stamps data-theme, so the selectors
+   below are reliable; the moon default covers the instant before it runs. */
 .theme-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--mist);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 3px;
-  cursor: pointer;
-  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: var(--mist); border: 1px solid var(--line); border-radius: 999px;
+  color: var(--text-soft); cursor: pointer; padding: 0;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
 }
-.tt-opt {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 999px;
-  color: var(--text-muted);
-  transition: background 0.15s ease, color 0.15s ease;
-}
-[data-theme="light"] .tt-light,
-[data-theme="dark"] .tt-dark {
-  background: var(--accent);
-  color: var(--on-accent);
-  font-weight: 700;
-}
+.theme-toggle:hover { border-color: var(--accent); color: var(--text); background: var(--accent-tint); }
+.tt-ico { width: 17px; height: 17px; display: none; }
+.tt-moon { display: block; }
+[data-theme="dark"] .tt-moon { display: none; }
+[data-theme="dark"] .tt-sun { display: block; }
 
 .header-cta { flex-shrink: 0; }
 .header-cta .btn { padding: 10px 22px; font-size: 14px; }
@@ -1175,7 +1166,6 @@ a.service-card:hover { border-color: var(--text-muted); }
   .container { padding-left: 18px; padding-right: 18px; }
   .brand { font-size: 14px; gap: 8px; }
   .brand img { width: 30px; height: 30px; }
-  .tt-opt { padding: 5px 9px; }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions .btn { width: 100%; }
   .card { padding: 20px; }
@@ -2019,3 +2009,24 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 
 @media (min-width: 640px)  { .print-grid { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 980px)  { .print-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+/* Market/currency button — the theme toggle's circular sibling. The visible
+   face is the active market's currency symbol; the real <select> sits on top
+   at opacity 0, so a tap opens the native dropdown (keyboard and mobile get
+   the platform picker for free). geo.js populates it and reloads on change,
+   which refreshes the symbol. */
+.market-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: var(--mist); border: 1px solid var(--line); border-radius: 999px;
+  color: var(--text-soft);
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+.market-btn:hover, .market-btn:focus-within {
+  border-color: var(--accent); color: var(--text); background: var(--accent-tint);
+}
+.mb-sym { font-size: 14px; font-weight: 700; line-height: 1; pointer-events: none; }
+.market-btn .market-picker {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; border: 0; appearance: none; font: inherit;
+}

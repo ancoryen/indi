@@ -21,6 +21,13 @@ document.querySelectorAll('.theme-toggle').forEach((btn) => {
   });
 });
 
+// The header market button shows the active currency's symbol. geo.js has
+// already initialised by the time this runs (script order), and a market
+// change reloads the page, so setting it once here is enough.
+document.querySelectorAll('.market-btn .mb-sym').forEach((el) => {
+  if (window.Geo && Geo.market) el.textContent = Geo.market.sym;
+});
+
 // Reveal on scroll (skipped for reduced motion — CSS shows content by default there)
 const observer = new IntersectionObserver((entries) => {
   for (const entry of entries) {
