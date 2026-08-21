@@ -686,3 +686,69 @@ create policy "anon can request a callback"
   on public.callback_requests for insert
   to anon, authenticated
   with check (true);
+
+-- ==================================================================== metrics
+-- First-party page views: path, referrer host, coarse screen bucket. No
+-- identifiers, no cookies, nothing joinable to a person — measurement the
+-- privacy policy can describe in one honest sentence. Anon INSERT-only.
+create table if not exists public.page_views (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  path text not null,
+  ref text,
+  screen text
+);
+alter table public.page_views enable row level security;
+drop policy if exists "anon can record a page view" on public.page_views;
+create policy "anon can record a page view"
+  on public.page_views for insert to anon, authenticated with check (true);
+
+-- ==================================================================== reviews
+-- Real client reviews, inserted by the admin with the client's permission —
+-- never by the public site. Anon may READ published rows only; there is no
+-- anon write path, which is what keeps the section honest by construction.
+create table if not exists public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  author text not null,
+  business text,
+  quote text not null,
+  rating integer check (rating between 1 and 5),
+  source text not null default 'direct',      -- 'google' | 'direct' | ...
+  permission boolean not null default false,  -- client agreed, in writing
+  published boolean not null default false
+);
+alter table public.reviews enable row level security;
+drop policy if exists "anyone can read published reviews" on public.reviews;
+create policy "anyone can read published reviews"
+  on public.reviews for select to anon, authenticated
+  using (published = true and permission = true);
+
+-- ============================================================ payment events
+-- Razorpay webhook landing zone. The edge function verifies the signature and
+-- writes here with the service role; nothing is exposed to anon at all.
+create table if not exists public.payment_events (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  event text not null,
+  payment_id text,
+  order_id uuid,
+  amount integer,
+  verified boolean not null default false,
+  raw jsonb
+);
+alter table public.payment_events enable row level security;
+-- no anon policies on purpose: service-role access only.
+
+-- Orders learn whether their payment reference was confirmed by the gateway,
+-- instead of the database taking the browser's word for it.
+alter table public.orders add column if not exists payment_verified boolean not null default false;
+
+create or replace function public.mark_payment_verified(p_payment_id text)
+returns void language sql security definer set search_path = public as $$
+  update public.orders set payment_verified = true
+  where payment_id = p_payment_id;
+$$;
+-- The webhook function runs with the service role, which bypasses RLS; the
+-- function exists so the update is one audited statement, not ad-hoc SQL.
+revoke execute on function public.mark_payment_verified(text) from anon, authenticated;

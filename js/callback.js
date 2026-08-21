@@ -79,7 +79,8 @@ window.Callback = (() => {
       email: $('cbf-email').value.trim() || null,
       context: $('cbf-context').value.trim() || null,
       intent: state.intent,
-      source: 'ANC'
+      // Which page produced the lead — /ANC by default, overridden per page.
+      source: document.body.dataset.cbfSource || 'ANC'
     };
 
     const btn = $('cbf-submit');
@@ -106,6 +107,7 @@ window.Callback = (() => {
       btn.disabled = false;
       setIntent(state.intent);   // restores the button label
       const note = $('cbf-note');
+      if (note) { note.hidden = false; } // contact keeps it hidden until needed
       if (note) note.textContent =
         'Your email app should have opened with everything filled in — press send there. ' +
         'If it didn’t, call or email directly using the details above.';

@@ -105,6 +105,37 @@ chk('scripts send to the one address',
     .concat([...read('js/print.js').matchAll(/mailto:([a-z@.]+[a-z])/g)])
     .every(m => m[1] === EMAIL));
 
+hr('SITEMAP AND ROBOTS STAY IN SYNC');
+// The sitemap is generated from each page's own noindex state; this asserts
+// the sync so a new page or a robots change cannot silently drift it.
+const sitemap = read('sitemap.xml');
+const robots = read('robots.txt');
+for (const f of pages) {
+  const noindex = read(f).includes('name="robots" content="noindex');
+  const loc = 'https://www.indizilla.com/' + (f === 'index.html' ? '' : f.replace(/\.html$/, ''));
+  const listed = sitemap.includes('<loc>' + loc + '</loc>');
+  chk(f + (noindex ? ' stays out of the sitemap' : ' is in the sitemap'),
+    noindex ? !listed : listed);
+}
+chk('robots points at the sitemap', /Sitemap: https:\/\/www\.indizilla\.com\/sitemap\.xml/.test(robots));
+chk('robots blocks the app surfaces',
+  /Disallow: \/dashboard/.test(robots) && /Disallow: \/admin/.test(robots));
+
+hr('THE REVENUE PIPES ARE BUILT');
+chk('razorpay webhook function exists',
+  fs.existsSync(path.join(REPO, 'supabase/functions/razorpay-webhook/index.ts')));
+const webhook = read('supabase/functions/razorpay-webhook/index.ts');
+chk('webhook verifies the signature before anything else',
+  /validSignature/.test(webhook) && /invalid signature/.test(webhook));
+chk('webhook compare is constant-time', /diff \|=/.test(webhook));
+chk('ship.mjs deploys both functions',
+  /'research', 'razorpay-webhook'/.test(read('scripts/ship.mjs')));
+const mig = read('supabase/migration.sql');
+chk('migration has the four new tables',
+  ['callback_requests', 'page_views', 'reviews', 'payment_events']
+    .every(t => mig.includes('create table if not exists public.' + t)));
+chk('orders gain payment_verified', /add column if not exists payment_verified/.test(mig));
+
 hr('JS PARSES');
 for (const f of fs.readdirSync(path.join(REPO, 'js')).filter(f => f.endsWith('.js'))) {
   let ok = true, msg = '';

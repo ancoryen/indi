@@ -21,6 +21,7 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REF = process.env.SUPABASE_PROJECT_REF || 'iykuvppjmmatsvrrtwra';
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const ANTHROPIC = process.env.ANTHROPIC_API_KEY;
+const RZP_WEBHOOK = process.env.RAZORPAY_WEBHOOK_SECRET;  // optional — payments webhook
 const API = 'https://api.supabase.com/v1';
 
 const ok = (s) => console.log('  ✓ ' + s);
@@ -108,6 +109,15 @@ try {
     method: 'POST',
     body: JSON.stringify([{ name: 'ANTHROPIC_API_KEY', value: ANTHROPIC }])
   });
+  if (RZP_WEBHOOK) {
+    await api('/projects/' + REF + '/secrets', {
+      method: 'POST',
+      body: JSON.stringify([{ name: 'RAZORPAY_WEBHOOK_SECRET', value: RZP_WEBHOOK }])
+    });
+    ok('RAZORPAY_WEBHOOK_SECRET set');
+  } else {
+    console.log('  - RAZORPAY_WEBHOOK_SECRET not provided — payment webhook will 503 until it is set');
+  }
   const secrets = await api('/projects/' + REF + '/secrets');
   const present = (secrets || []).some((s) => s.name === 'ANTHROPIC_API_KEY');
   present ? ok('secret set and confirmed present') : bad('secret did not appear after setting');
@@ -139,10 +149,11 @@ try {
 step(4, 'Verifying');
 try {
   const fns = await api('/projects/' + REF + '/functions');
-  const fn = (fns || []).find((f) => f.slug === 'research');
-  fn ? ok('function live: status=' + fn.status + ' version=' + fn.version)
-     : bad('function not listed');
-  if (!fn) failed = true;
+  ['research', 'razorpay-webhook'].forEach((slug) => {
+    const fn = (fns || []).find((f) => f.slug === slug);
+    fn ? ok('function live: ' + slug + ' status=' + fn.status + ' version=' + fn.version)
+       : (bad('function not listed: ' + slug), failed = true);
+  });
 } catch (e) {
   bad('could not list functions — ' + e.message);
   failed = true;

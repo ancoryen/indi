@@ -34,7 +34,8 @@ window.PrintQuote = (() => {
     document.querySelectorAll('.print-card').forEach((card) => {
       const name = card.dataset.item;
       const btn = card.querySelector('.pc-add');
-      const inList = items.includes(name);
+      // Stored lines may carry a quantity suffix ('Visiting cards × 500 (…)').
+      const inList = items.some((i) => i === name || i.startsWith(name + ' ×'));
       btn.textContent = inList ? 'Added ✓' : 'Add to quote';
       btn.classList.toggle('is-added', inList);
     });
@@ -100,12 +101,71 @@ window.PrintQuote = (() => {
     }
   }
 
+
+  /* ---- indicative price bands -------------------------------------------
+     VistaPrint converts because a buyer sees a number before committing.
+     These bands give that moment honestly: a range from our own quantity
+     breaks, labelled indicative, with the quote as the confirmed figure.
+     Unit prices fall as quantity rises; the band is ±12% around the midpoint
+     because material and finish move the real number. */
+  const BANDS = {
+    'Visiting cards':                { unit: '100 cards', steps: { 100: 999, 250: 2199, 500: 3899, 1000: 6999 } },
+    'T-shirts & branded merch':      { unit: 'pieces',    steps: { 10: 3490, 25: 7990, 50: 14490, 100: 26990 } },
+    'Branded diaries & notebooks':   { unit: 'pieces',    steps: { 10: 2990, 25: 6740, 50: 12490, 100: 22990 } },
+    'Letterheads & envelopes':       { unit: 'sheets',    steps: { 100: 899, 250: 1999, 500: 3599, 1000: 6499 } },
+    'Bill books & receipt pads':     { unit: 'pads',      steps: { 5: 2995, 10: 5490, 25: 12490, 50: 22990 } },
+    'Stickers & labels':             { unit: 'sheet sets',steps: { 5: 2495, 10: 4490, 25: 9990, 50: 17990 } },
+    'Standees & banners':            { unit: 'pieces',    steps: { 1: 1299, 3: 3599, 5: 5699, 10: 10499 } },
+    'Business essentials kit':       { unit: 'kits',      steps: { 1: 799, 5: 3699, 10: 6899, 25: 15990 } }
+  };
+  const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const qty = {};   // item -> chosen quantity label
+
+  function bandFor(name, q) {
+    const spec = BANDS[name]; if (!spec) return null;
+    const mid = spec.steps[q]; if (mid == null) return null;
+    return inr(mid * 0.88) + '–' + inr(mid * 1.12);
+  }
+
+  function mountBands() {
+    document.querySelectorAll('.print-card').forEach((card) => {
+      const name = card.dataset.item;
+      const spec = BANDS[name]; if (!spec) return;   // quoted-by-spec items stay as they are
+      const row = document.createElement('div');
+      row.className = 'pc-band';
+      const sel = document.createElement('select');
+      sel.setAttribute('aria-label', 'Quantity for ' + name);
+      Object.keys(spec.steps).forEach((q) => {
+        const o = document.createElement('option');
+        o.value = q; o.textContent = q + ' ' + spec.unit;
+        sel.appendChild(o);
+      });
+      const out = document.createElement('span');
+      out.className = 'pc-band-out';
+      const update = () => {
+        qty[name] = sel.value;
+        out.innerHTML = '≈ ' + bandFor(name, sel.value) + ' <small>indicative — quote confirms</small>';
+      };
+      sel.addEventListener('change', update);
+      row.appendChild(sel); row.appendChild(out);
+      card.insertBefore(row, card.querySelector('.pc-add'));
+      update();
+    });
+  }
+  mountBands();
+
   function init() {
     if (!$('pq-form')) return;
     document.querySelectorAll('.print-card .pc-add').forEach((btn) =>
       btn.addEventListener('click', () => {
-        const name = btn.closest('.print-card').dataset.item;
-        if (!items.includes(name)) items.push(name); else items.splice(items.indexOf(name), 1);
+        const base = btn.closest('.print-card').dataset.item;
+        // Carry the chosen quantity and band into the quote line, so the call
+        // starts from the number the visitor already saw.
+        const name = qty[base]
+          ? base + ' × ' + qty[base] + (bandFor(base, qty[base]) ? ' (≈ ' + bandFor(base, qty[base]) + ')' : '')
+          : base;
+        const existing = items.findIndex((i) => i === name || i.startsWith(base + ' ×') || i === base);
+        if (existing === -1) items.push(name); else items.splice(existing, 1);
         save(); renderList(); syncButtons();
       }));
     $('pq-form').addEventListener('submit', submit);

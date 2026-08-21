@@ -71,7 +71,7 @@
         <a class="btn btn-primary" href="contact.html">Get Started <span class="arrow">↗</span></a>
         <a class="btn btn-secondary" href="pricing.html">View Pricing</a>
       </div>
-      <div class="trust-strip"><span>Razorpay-secured payments</span><span>Automatic bill with every order</span><span>You own 100% of the work</span><span>No lock-in contracts</span><span>Reply within one business day</span></div>
+      <div class="trust-strip"><span>Razorpay-secured payments</span><span>Automatic bill with every order</span><span>100% ownership, transferred on delivery &amp; payment</span><span>No lock-in contracts</span><span>Reply within one business day</span></div>
       <div class="hero-note" aria-label="Who we work with">
         <span class="chip">Restaurants</span>
         <span class="chip">Clinics</span>
@@ -128,7 +128,7 @@
         </div>
         <div class="card reveal">
           <h4>Trustworthy</h4>
-          <p>Honest claims, visible process, no fake urgency. You own everything we make.</p>
+          <p>Honest claims, visible process, no fake urgency. Everything we make becomes yours — transferred in full once it's delivered and paid for.</p>
         </div>
       </div>
     </div>
@@ -236,7 +236,7 @@
           <ul class="check-list">
             <li>Every service shows a starting price. Nothing is hidden.</li>
             <li>You approve the exact cost before anything begins.</li>
-            <li>You own everything — domain, website, designs, accounts.</li>
+            <li>Everything — domain, website, designs, accounts — transfers to you in full on delivery and payment.</li>
           </ul>
           <div style="margin-top:30px;">
             <a class="btn btn-secondary" href="pricing.html">See all pricing</a>
@@ -268,7 +268,7 @@
           <li>Quick systems design — a week of decisions, not a quarter of documents</li>
           <li>Version one ships when it can meet a real user</li>
           <li>Learn early, adapt quickly, grow on evidence</li>
-          <li>You own every login, repo and account</li>
+          <li>Every login, repo and account transfers to you on delivery and payment</li>
         </ul>
       </div>
     </div>
@@ -301,6 +301,18 @@
     </div>
   </section>
 
+  <!-- CLIENT REVIEWS — renders only rows a real client approved (see
+       js/reviews.js); hidden entirely while none exist. -->
+  <section class="section" id="reviews-section" hidden>
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Client words</div>
+        <h2>In their words, with their permission.</h2>
+      </div>
+      <div class="grid-3 reviews-grid"></div>
+    </div>
+  </section>
+
   <!-- FAQ -->
   <section class="section" id="faq">
     <div class="container">
@@ -323,7 +335,7 @@
         </details>
         <details>
           <summary>Who owns the work?</summary>
-          <p class="answer">You do. Your domain, your website, your designs, your accounts — all registered in your name with logins handed over at launch. If we ever part ways, everything stays with you.</p>
+          <p class="answer">You do — fully, once the work is complete. Ownership of everything we build transfers to you when we confirm delivery and full payment is received: domain, website, designs, accounts, every login. From that point it's yours outright, and if we ever part ways, everything stays with you. Until then the work-in-progress remains ours — that's what protects both sides. The exact terms are in our <a href="terms.html" style="color:var(--accent-ink); font-weight:600;">terms of service</a>.</p>
         </details>
         <details>
           <summary>What happens after launch?</summary>
@@ -369,12 +381,16 @@
         <a href="pricing.html">Pricing</a>
         <a href="resources.html">Resources</a>
         <a href="login.html">Client login</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="refunds.html">Refunds</a>
       </div>
       <div class="footer-col">
         <h4>Services</h4>
         <a href="cart.html">Build your own bundle</a>
         <a href="build.html">Websites, apps &amp; MVPs</a>
         <a href="print.html">Print &amp; merch</a>
+        <a href="compare.html">Why one vendor</a>
         <a href="services.html#visibility">Get found on Google</a>
         <a href="services.html#branding">Brand identity</a>
         <a href="services.html#website">Websites</a>
@@ -399,7 +415,10 @@
   <a class="btn btn-primary" href="contact.html">Get Started <span class="arrow">↗</span></a>
 </div>
 
+<script src="js/config.js"></script>
 <script src="js/geo.js"></script>
 <script src="js/main.js"></script>
+<script src="js/reviews.js"></script>
+<script src="js/metrics.js"></script>
 </body>
 </html>

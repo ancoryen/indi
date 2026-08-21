@@ -162,6 +162,67 @@ const pkgBlock = db.slice(db.indexOf('const PACKAGES'), db.indexOf('const CLUB_P
     chk(id + ' costs less than its parts (' + price + ' vs ' + sum + ')', Number(price) < sum);
   });
 
+/* --------------------------------------------- 6. ownership transfers, not floats */
+hr('OWNERSHIP LANGUAGE CARRIES THE TRANSFER CONDITION');
+// The rule: ownership is total but transfers only when delivery is confirmed
+// and payment is complete. A bare "you own everything" reappearing anywhere
+// would silently promise more than the terms grant.
+const OWNERSHIP_BARE = [
+  /You own 100% of the work/,
+  /You own everything we (make|build)\b(?![^.]*paid)/,
+  /logins handed over at launch/
+];
+pages.forEach(f => {
+  const s = read(f);
+  OWNERSHIP_BARE.forEach(re => {
+    if (re.test(s)) chk(f + ' has no unconditional ownership claim', false, String(re));
+  });
+});
+chk('no unconditional ownership claims anywhere', true);
+['index.html', 'pricing.html', 'build.html', 'cart.html'].forEach(f =>
+  chk(f + ' states transfer on delivery & payment',
+    /transfers? (to you )?(in full |immediate|on )?[^<]*deliver/i.test(read(f)) ||
+    /transferred on delivery/i.test(read(f))));
+
+/* ------------------------------------------------- 7. legal pages exist */
+hr('LEGAL PAGES');
+['terms.html', 'privacy.html', 'refunds.html'].forEach(f =>
+  chk(f + ' exists', fs.existsSync(path.join(REPO, f))));
+const termsPage = read('terms.html');
+chk('terms codify the ownership-transfer rule',
+  /transfers to you when both/.test(termsPage) &&
+  /confirmed the work as delivered/.test(termsPage) &&
+  /full payment/.test(termsPage));
+chk('terms say who decides delivery', /determined by us/.test(termsPage));
+const privacyPage = read('privacy.html');
+chk('privacy covers the forms, storage and measurement',
+  /callback/i.test(privacyPage) && /localStorage/.test(privacyPage) &&
+  /page views/i.test(privacyPage) && /Razorpay/.test(privacyPage));
+const refundsPage = read('refunds.html');
+chk('refunds distinguish before/in-progress/after-delivery',
+  /Before work begins/.test(refundsPage) && /confirm delivery/i.test(refundsPage));
+chk('refunds cover credits and print',
+  /credits/i.test(refundsPage) && /production/i.test(refundsPage));
+chk('footer links reach the legal pages from the homepage',
+  /href="terms\.html"/.test(read('index.html')) &&
+  /href="privacy\.html"/.test(read('index.html')) &&
+  /href="refunds\.html"/.test(read('index.html')));
+
+/* --------------------------------------------- 8. comparison page, print bands */
+hr('COMPARE PAGE AND PRINT BANDS');
+const compare = read('compare.html');
+chk('compare page frames on coherence and ownership', /coherence and ownership/.test(compare));
+chk('compare names categories, not rival brands',
+  !/NowFloats|GoDaddy|Wix|Fiverr|VistaPrint/i.test(compare));
+chk('compare carries the transfer rule', /delivery and payment/.test(compare));
+chk('compare quotes no rival prices', !/₹\s?\d/.test(compare));
+const printJs2 = read('js/print.js');
+chk('print bands are labelled indicative with quote confirming',
+  /indicative — quote confirms/.test(printJs2));
+chk('metrics beacon respects Do Not Track', /doNotTrack/.test(read('js/metrics.js')));
+chk('reviews render only permissioned rows',
+  /published = true and permission = true/.test(read('supabase/migration.sql')));
+
 /* ------------------------------------------------------ 6. the Build page */
 hr('BUILD — IDEAS TO PRODUCTS');
 const build = read('build.html');

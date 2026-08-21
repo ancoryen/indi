@@ -2030,3 +2030,25 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   position: absolute; inset: 0; width: 100%; height: 100%;
   opacity: 0; cursor: pointer; border: 0; appearance: none; font: inherit;
 }
+
+/* ------------------------------------------------------------ legal pages */
+.legal-updated { font-size: 13px; color: var(--text-muted); margin-top: 14px; }
+.legal-body { max-width: 720px; }
+.legal-body h2 { font-size: 19px; margin: 34px 0 10px; letter-spacing: -0.01em; }
+.legal-body h2:first-child { margin-top: 0; }
+.legal-body .ln { color: var(--accent-ink); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.legal-body p { font-size: 15px; line-height: 1.65; color: var(--text-soft); margin: 0 0 12px; }
+.legal-body ul { margin: 0 0 12px; padding-left: 22px; display: grid; gap: 8px; }
+.legal-body li { font-size: 15px; line-height: 1.6; color: var(--text-soft); }
+.legal-body a { color: var(--accent-ink); font-weight: 600; }
+.legal-body strong { color: var(--text); }
+
+/* print price bands — the honest middle ground between silence and a fake
+   checkout: a range from our own quantity breaks, confirmed by the quote. */
+.pc-band { display: grid; gap: 6px; margin: 2px 0 6px; }
+.pc-band select { font: inherit; font-size: 13px; padding: 8px 10px; min-height: 40px;
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--surface); color: var(--text); width: 100%; }
+.pc-band-out { font-size: 13.5px; font-weight: 600; color: var(--text);
+  font-variant-numeric: tabular-nums; }
+.pc-band-out small { font-weight: 500; color: var(--text-muted); }
