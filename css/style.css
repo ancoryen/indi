@@ -1984,3 +1984,36 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
 
 .cbf-offer { font-size: 12px; color: var(--text-muted); line-height: 1.55;
   margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+
+/* ------------------------------------------------------ print & merch
+   Marketplace-lite: browse cards, collect a quote list, one enquiry. Print
+   pricing turns on quantity and spec, so "from" is the honest floor and the
+   quote is the number — the page never pretends to be a checkout. */
+.print-grid { display: grid; gap: 16px; }
+.print-card { border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--surface-raised); padding: 22px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: transform .2s ease, box-shadow .2s ease; }
+.print-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+.pc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.pc-head h3 { font-size: 17px; margin: 0; }
+.pc-price { font-size: 13px; font-weight: 700; color: var(--accent-ink);
+  white-space: nowrap; flex-shrink: 0; }
+.pc-price small { font-weight: 500; color: var(--text-muted); }
+.print-card p { font-size: 14px; color: var(--text-soft); line-height: 1.5; margin: 0; flex: 1; }
+.pc-add { align-self: flex-start; min-height: 40px; }
+.pc-add.is-added { border-color: var(--accent); background: var(--accent-tint); color: var(--text); }
+.print-note { font-size: 13px; color: var(--text-muted); margin: 20px 0 0; max-width: 640px; }
+
+.print-quote { max-width: 560px; }
+.pq-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.pq-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--surface); font-size: 14px; }
+.pq-remove { font: inherit; font-size: 16px; line-height: 1; border: 0; background: none;
+  color: var(--text-muted); cursor: pointer; padding: 6px 8px; border-radius: var(--r-sm); }
+.pq-remove:hover { color: var(--v-no); background: var(--v-no-bg); }
+.pq-empty { font-size: 13px; color: var(--text-muted); margin: 0 0 16px; }
+
+@media (min-width: 640px)  { .print-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 980px)  { .print-grid { grid-template-columns: 1fr 1fr 1fr; } }

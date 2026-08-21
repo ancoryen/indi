@@ -67,10 +67,14 @@ const portfolio = read('portfolio.html');
 chk('GetPharm is on the portfolio', /GetPharm/.test(portfolio));
 chk('GetPharm links to the live product', /getpharm\.in/.test(portfolio));
 chk('Savison Life is on the portfolio', /Savison Life/.test(portfolio));
-// The honest floor: scope statements, never metrics nobody measured.
-chk('portfolio cases quote no percentage or multiplier results',
-  !/class="num"[^>]*>\s*[\d.]+\s*[×%★]/.test(portfolio),
-  (portfolio.match(/class="num"[^>]*>\s*[\d.]+\s*[×%★]/) || [])[0]);
+// The manufacturer case (pharmaceutical, Himachal Pradesh) carries figures the
+// client vouched for, so the earlier blanket ban on numeric results is gone.
+// What stays banned is naming: the old fabricated company names above, and the
+// approved case deliberately names no company.
+chk('the manufacturer case is the approved one',
+  /Pharmaceutical manufacturer · Himachal Pradesh/.test(portfolio));
+chk('the manufacturer case names no company',
+  !/[A-Z][a-z]+ (Precision|Tools|Pharma(ceuticals)?) /.test(portfolio));
 chk('index features the real project, not the mock',
   /GetPharm/.test(read('index.html')) && !/Shine/.test(read('index.html')));
 chk('the fabricated testimonial section is gone',
@@ -102,12 +106,52 @@ console.log('catalogue: ' + Object.keys(catalogue).length + ' priced items');
 chk('website is priced as flagship work', catalogue.website >= 30000, String(catalogue.website));
 chk('brand identity is priced as flagship work', catalogue.brand >= 20000, String(catalogue.brand));
 chk('growth package is the premium tier', catalogue['tier-growth'] >= 70000, String(catalogue['tier-growth']));
-// USD ceiling: dearest package × US multiplier stays under a $5k US-market
-// equivalent — the "industry standard or USD counterpart, whichever is lower"
-// rule, kept checkable.
+// USD ceiling: package × US multiplier stays under its US-market equivalent —
+// the "industry standard or USD counterpart, whichever is lower" rule, kept
+// checkable. Growth vs a $5k–15k US bundle; Chain vs $10k+ multi-location work.
 chk('growth package converts below its USD counterpart',
   catalogue['tier-growth'] * 3.5 / 88 < 5000,
   '$' + Math.round(catalogue['tier-growth'] * 3.5 / 88));
+chk('chain package converts below its USD counterpart',
+  catalogue['tier-chain'] * 3.5 / 88 < 10000,
+  '$' + Math.round(catalogue['tier-chain'] * 3.5 / 88));
+
+/* ------------------------------------------- 4. stakeholder segmentation */
+hr('PRICING IS SEGMENTED BY STAKEHOLDER');
+const pricing = read('pricing.html');
+// The deciding factor is size and stage; each segment says who it is for.
+chk('owner-run & local segment exists', /id="local"/.test(pricing) && /Owner-run/.test(pricing));
+chk('founders segment exists', /id="founders"/.test(pricing) && /Founders/.test(pricing));
+chk('multi-location segment exists', /id="chains"/.test(pricing) && /Multi-location/.test(pricing));
+chk('six packages across the segments',
+  (pricing.match(/class="price-card/g) || []).length === 6,
+  String((pricing.match(/class="price-card/g) || []).length));
+['Launch', 'Chain', 'Chain Partner'].forEach(t =>
+  chk('tier present: ' + t, new RegExp('<div class="tier">' + t + '</div>').test(pricing)));
+// "Most chosen" was a popularity claim nobody measured.
+chk('no unmeasured popularity badge', !/Most chosen/.test(pricing));
+chk('founders segment routes to Research for validation',
+  /id="founders"[\s\S]*?research\.html/.test(pricing));
+
+/* --------------------------------------------------- 5. print marketplace */
+hr('PRINT & MERCH');
+const print = read('print.html');
+const printJs = read('js/print.js');
+chk('print.html exists with a product grid', /print-grid/.test(print));
+chk('at least eight products', (print.match(/class="print-card"/g) || []).length >= 8,
+  String((print.match(/class="print-card"/g) || []).length));
+['Visiting cards', 'T-shirts', 'diaries', 'Letterheads', 'essentials']
+  .forEach(item => chk('offers ' + item, new RegExp(item, 'i').test(print)));
+chk('quote list form: name and phone mandatory',
+  /id="pq-name"[^>]*\brequired\b/.test(print) && /id="pq-phone"[^>]*\brequired\b/.test(print));
+chk('honest about from-prices being a floor', /quote is the real number/.test(print));
+chk('enquiries reuse the callback pipeline', /callback_requests/.test(printJs) &&
+  /source: 'PRINT'/.test(printJs));
+chk('print failure falls back to email too', /mailto:hi@indizilla\.com/.test(printJs));
+chk('the nav reaches the marketplace',
+  /href="print\.html">Print</.test(read('index.html')) &&
+  /href="print\.html">Print</.test(read('services.html')));
+chk('services page carries the print panel', /id="print"/.test(read('services.html')));
 
 /* -------------------------------------------------- packages stay coherent */
 const pkgBlock = db.slice(db.indexOf('const PACKAGES'), db.indexOf('const CLUB_PREMIUM'));

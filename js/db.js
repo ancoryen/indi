@@ -42,6 +42,9 @@ window.DB = (() => {
     { id: 'whatsapp', name: 'WhatsApp Business', price: 4999 },
     { id: 'booking', name: 'Booking System', price: 9999 },
     { id: 'tier-starter', name: 'Starter package', price: 24999 },
+    { id: 'tier-launch', name: 'Launch package', price: 37999 },
+    { id: 'tier-chain', name: 'Chain package', price: 149999 },
+    { id: 'tier-chain-partner', name: 'Chain Partner plan', price: 69999, monthly: true },
     { id: 'tier-growth', name: 'Growth package', price: 79999 },
     { id: 'tier-partner', name: 'Partner plan', price: 34999, monthly: true }
   ];
@@ -53,6 +56,10 @@ window.DB = (() => {
       includes: ['gbp', 'landing', 'profile-design', 'whatsapp'] },
     { id: 'tier-growth', name: 'Growth package', price: 79999, monthly: false,
       includes: ['gbp', 'landing', 'profile-design', 'whatsapp', 'brand', 'website', 'seo', 'email', 'booking'] },
+    { id: 'tier-launch', name: 'Launch package', price: 37999, monthly: false,
+      includes: ['brand', 'landing', 'email', 'whatsapp'] },
+    { id: 'tier-chain', name: 'Chain package', price: 149999, monthly: false,
+      includes: ['gbp', 'landing', 'profile-design', 'whatsapp', 'brand', 'website', 'seo', 'email', 'booking', 'catalogue', 'crm', 'automation'] },
     { id: 'tier-partner', name: 'Partner plan', price: 34999, monthly: true,
       includes: ['maintenance', 'social', 'meta-ads', 'google-ads', 'reviews'] }
   ];
@@ -63,7 +70,8 @@ window.DB = (() => {
     gbp: 3, brand: 14, website: 21, landing: 7, seo: 14, 'meta-ads': 7, 'google-ads': 7,
     crm: 7, email: 1, chatbot: 7, automation: 7, social: 7, maintenance: 3, reviews: 3,
     'profile-design': 2, catalogue: 5, whatsapp: 2, booking: 4,
-    'tier-starter': 7, 'tier-growth': 21, 'tier-partner': 7, cart: 14
+    'tier-starter': 7, 'tier-growth': 21, 'tier-partner': 7,
+    'tier-launch': 14, 'tier-chain': 30, 'tier-chain-partner': 7, cart: 14
   };
 
   const REFERRAL_BONUS = 500;   // internal credits (₹ worth) per successful referral
