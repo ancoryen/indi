@@ -105,6 +105,32 @@ chk('scripts send to the one address',
     .concat([...read('js/print.js').matchAll(/mailto:([a-z@.]+[a-z])/g)])
     .every(m => m[1] === EMAIL));
 
+hr('SERP SIGNALS');
+// The brand query showed the retired title for days because canonicals
+// pointed at URLs that redirect twice. One URL shape, everywhere, forever.
+const titles = {};
+for (const f of pages) {
+  const s = read(f);
+  const title = (s.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  chk(f + ' title is unique', !titles[title], 'duplicate of ' + titles[title]);
+  titles[title] = f;
+  if (s.includes('name="robots" content="noindex')) continue;
+  const clean = 'https://www.indizilla.com/' + (f === 'index.html' ? '' : f.replace(/\.html$/, ''));
+  const canon = (s.match(/rel="canonical" href="([^"]*)"/) || [])[1];
+  chk(f + ' canonical is www + clean', canon === clean, canon);
+  const og = (s.match(/property="og:url" content="([^"]*)"/) || [])[1];
+  if (og) chk(f + ' og:url matches canonical', og === clean, og);
+  const d = (s.match(/name="description" content="([^"]*)"/) || [])[1] || '';
+  chk(f + ' description 50–160 chars', d.length >= 50 && d.length <= 160, d.length + ' chars');
+}
+// The brand-query answer: enriched Organization data and a pushable index key.
+const home = read('index.html');
+chk('Organization JSON-LD carries logo, founder, slogan and sameAs',
+  /"logo": "https:\/\/www\.indizilla\.com\/assets/.test(home) &&
+  /"founder"/.test(home) && /"slogan"/.test(home) && /"sameAs"/.test(home));
+chk('an IndexNow key file exists at the root',
+  fs.readdirSync(REPO).some(f => /^[0-9a-f]{32}\.txt$/.test(f)));
+
 hr('SITEMAP AND ROBOTS STAY IN SYNC');
 // The sitemap is generated from each page's own noindex state; this asserts
 // the sync so a new page or a robots change cannot silently drift it.
