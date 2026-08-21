@@ -2086,3 +2086,16 @@ textarea:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 1
   padding: 11px 13px; border: 1px solid var(--line); border-radius: var(--r-md);
   background: var(--surface-raised); color: var(--text); min-height: 44px; }
 .nl-done { font-size: 14px; font-weight: 600; color: var(--accent-ink); }
+
+/* demo-frame extras for the promise/tempo/quote scenes */
+.demo-hit { margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: var(--r-md); background: var(--surface); }
+.demo-hit b { font-size: 15px; }
+.demo-hit-sub { display: block; font-size: 12.5px; color: var(--text-soft); margin-top: 3px; }
+.demo-cta-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.demo-btn { font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); }
+.demo-btn.is-hot { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.demo-version { display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: .05em; color: var(--accent-ink); border: 1px solid var(--accent-ink);
+  border-radius: 999px; padding: 1px 8px; vertical-align: 2px; margin-left: 4px; }

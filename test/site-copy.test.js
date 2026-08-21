@@ -259,6 +259,20 @@ chk('metrics beacon respects Do Not Track', /doNotTrack/.test(read('js/metrics.j
 chk('reviews render only permissioned rows',
   /published = true and permission = true/.test(read('supabase/migration.sql')));
 
+/* ------------------------------------------------- 9. animated explainers */
+hr('ANIMATED EXPLAINERS');
+// The Research demo device, reused only where content is a real sequence.
+[['index.html','promise'],['build.html','tempo'],['print.html','quote']].forEach(([f,id])=>{
+  const s = read(f);
+  chk(f + ' carries the ' + id + ' demo', new RegExp('data-demo="' + id + '"').test(s));
+  chk(f + ' demo has 3+ scenes and a pause control',
+    (s.match(/demo-panel/g) || []).length >= 3 && /demo-toggle/.test(s));
+});
+const mainJs = read('js/main.js');
+chk('generic demo binder exists', mainJs.includes('.demo-frame[data-demo]'));
+chk('demos respect prefers-reduced-motion', /prefers-reduced-motion/.test(mainJs));
+chk('a hand-pause survives scrolling', /userPaused/.test(mainJs));
+
 /* ------------------------------------------------------ 6. the Build page */
 hr('BUILD — IDEAS TO PRODUCTS');
 const build = read('build.html');
