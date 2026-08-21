@@ -586,7 +586,9 @@ a.service-card:hover { border-color: var(--text-muted); }
   color: var(--text-muted);
 }
 .price-card .amount { font-family: var(--font-disp); font-size: 36px; font-weight: 800; letter-spacing: -0.02em; margin: 10px 0 2px; }
-.price-card .amount small { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text-muted); letter-spacing: 0; }
+/* nowrap so the label drops to its own line as a unit instead of breaking
+   mid-word ("one-" / "time") when it sits beside a long price. */
+.price-card .amount small { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text-muted); letter-spacing: 0; white-space: nowrap; display: inline-block; }
 .price-card .for-whom { font-size: 14px; color: var(--text-soft); margin: 12px 0 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line-soft); }
 .price-card ul { list-style: none; display: grid; gap: 10px; margin-bottom: 24px; }
 .price-card li { font-size: 14px; color: var(--text-soft); display: flex; gap: 10px; }
